@@ -10,6 +10,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.input.pointer.motionEventSpy
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -28,12 +30,12 @@ fun TaskFormScreen(
 
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.background
+        color = MaterialTheme.colorScheme.background,
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(20.dp)
+                .padding(30.dp)
         ) {
 
             // ---------- HEADER ----------
@@ -130,7 +132,7 @@ fun TaskFormScreen(
                 )
             }
 
-            Spacer(Modifier.height(40.dp))
+            Spacer(Modifier.height(20.dp))
 
             // ---------- BOTONES ----------
             Row(
@@ -139,7 +141,8 @@ fun TaskFormScreen(
             ) {
                 OutlinedButton(
                     onClick = onCancel,
-                    shape = RoundedCornerShape(12.dp)
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier.fillMaxHeight()
                 ) {
                     Text("Cancelar")
                 }
@@ -147,6 +150,7 @@ fun TaskFormScreen(
                 Button(
                     onClick = onCreateTask,
                     shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier.fillMaxHeight(),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = YellowPrimary,
                         contentColor = MaterialTheme.colorScheme.onPrimary
@@ -200,7 +204,7 @@ fun CardInputSection(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(MaterialTheme.colorScheme.surface)
+                    .background(MaterialTheme.colorScheme.surfaceBright)
                     .padding(16.dp),
                 content = content
             )

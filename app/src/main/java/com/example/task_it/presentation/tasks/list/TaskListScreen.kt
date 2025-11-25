@@ -5,16 +5,23 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.List
+import androidx.compose.material.icons.filled.StickyNote2
+import androidx.compose.material.icons.filled.Task
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.dropShadow
+import androidx.compose.ui.draw.innerShadow
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -46,7 +53,7 @@ fun TaskListScreen(
 @Composable
 private fun TaskTopBar() {
     Surface(
-        shadowElevation = 4.dp,
+        shadowElevation = 1.dp,
         color = MaterialTheme.colorScheme.background
     ) {
         Row(
@@ -153,13 +160,17 @@ private fun EmptyTaskState(
 
 @Composable
 private fun TaskBottomBar() {
-    NavigationBar {
+    NavigationBar(
+        Modifier.shadow(12.dp),
+        containerColor = MaterialTheme.colorScheme.background, // o Color.White
+
+    ){
         NavigationBarItem(
             selected = true,
             onClick = { /* Ya estamos en Tareas */ },
             icon = {
                 Icon(
-                    imageVector = Icons.Filled.List,
+                    imageVector = Icons.Filled.Task,
                     contentDescription = "Tareas"
                 )
             },
