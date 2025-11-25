@@ -7,6 +7,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.AddTask
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.LightMode
@@ -21,6 +22,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.dropShadow
 import androidx.compose.ui.draw.innerShadow
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -54,16 +56,19 @@ fun TaskListScreen(
 private fun TaskTopBar() {
     Surface(
         shadowElevation = 1.dp,
-        color = MaterialTheme.colorScheme.background
+        color = MaterialTheme.colorScheme.surface
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 12.dp),
+                .padding(horizontal = 16.dp, vertical = 20.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(top = 15.dp)
+            ) {
                 Box(
                     modifier = Modifier
                         .size(32.dp)
@@ -74,7 +79,7 @@ private fun TaskTopBar() {
                     Icon(
                         imageVector = Icons.Filled.Description,
                         contentDescription = "Logo Task-it",
-                        tint = MaterialTheme.colorScheme.onPrimary
+                        tint = MaterialTheme.colorScheme.onPrimary,
                     )
                 }
                 Spacer(modifier = Modifier.width(8.dp))
@@ -86,7 +91,10 @@ private fun TaskTopBar() {
                 )
             }
 
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(top = 15.dp)
+            ) {
                 IconButton(onClick = { /* TODO: cambiar tema */ }) {
                     Icon(
                         imageVector = Icons.Filled.LightMode,
@@ -161,16 +169,15 @@ private fun EmptyTaskState(
 @Composable
 private fun TaskBottomBar() {
     NavigationBar(
-        Modifier.shadow(12.dp),
-        containerColor = MaterialTheme.colorScheme.background, // o Color.White
-
+        Modifier.shadow(elevation = 8.dp),
+        containerColor = MaterialTheme.colorScheme.background
     ){
         NavigationBarItem(
             selected = true,
             onClick = { /* Ya estamos en Tareas */ },
             icon = {
                 Icon(
-                    imageVector = Icons.Filled.Task,
+                    imageVector = Icons.Filled.List,
                     contentDescription = "Tareas"
                 )
             },

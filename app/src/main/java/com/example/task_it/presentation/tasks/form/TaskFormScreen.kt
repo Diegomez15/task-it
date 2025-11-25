@@ -142,7 +142,7 @@ fun TaskFormScreen(
                 OutlinedButton(
                     onClick = onCancel,
                     shape = RoundedCornerShape(12.dp),
-                    modifier = Modifier.fillMaxHeight()
+                    modifier = Modifier.height(45.dp).width(150.dp),
                 ) {
                     Text("Cancelar")
                 }
@@ -150,7 +150,7 @@ fun TaskFormScreen(
                 Button(
                     onClick = onCreateTask,
                     shape = RoundedCornerShape(12.dp),
-                    modifier = Modifier.fillMaxHeight(),
+                    modifier = Modifier.height(45.dp).width(150.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = YellowPrimary,
                         contentColor = MaterialTheme.colorScheme.onPrimary
