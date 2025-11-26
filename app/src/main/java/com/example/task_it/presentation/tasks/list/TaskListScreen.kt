@@ -2,33 +2,33 @@ package com.example.task_it.presentation.tasks.list
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.AddTask
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.List
-import androidx.compose.material.icons.filled.StickyNote2
-import androidx.compose.material.icons.filled.Task
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.dropShadow
-import androidx.compose.ui.draw.innerShadow
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.task_it.presentation.theme.TextSecondary
 import com.example.task_it.presentation.theme.YellowPrimary
+import androidx.compose.runtime.getValue
+
+
+
 
 @Composable
 fun TaskListScreen(
@@ -37,7 +37,6 @@ fun TaskListScreen(
 ) {
     Scaffold(
         topBar = { TaskTopBar() },
-        floatingActionButtonPosition = FabPosition.End,
         bottomBar = { TaskBottomBar() },
         containerColor = MaterialTheme.colorScheme.background
     ) { innerPadding ->
@@ -50,13 +49,25 @@ fun TaskListScreen(
             EmptyTaskState(onAddTaskClick = onAddTaskClick)
         }
     }
+    val viewModel: TaskListViewModel = viewModel()
+    val tasks by viewModel.tasks.collectAsState()
+
+    LazyColumn {
+        items(tasks) { task ->
+            Text(
+                text = task.title,
+                modifier = Modifier.padding(16.dp)
+            )
+        }
+    }
+
 }
 
 @Composable
 private fun TaskTopBar() {
     Surface(
         shadowElevation = 1.dp,
-        color = MaterialTheme.colorScheme.surface
+        color = MaterialTheme.colorScheme.surfaceBright
     ) {
         Row(
             modifier = Modifier
@@ -95,7 +106,7 @@ private fun TaskTopBar() {
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.padding(top = 15.dp)
             ) {
-                IconButton(onClick = { /* TODO: cambiar tema */ }) {
+                IconButton(onClick = { /* TODO: Cambiar tema */ }) {
                     Icon(
                         imageVector = Icons.Filled.LightMode,
                         contentDescription = "Cambiar tema"
@@ -166,11 +177,12 @@ private fun EmptyTaskState(
     }
 }
 
+
+
 @Composable
 private fun TaskBottomBar() {
     NavigationBar(
-        Modifier.shadow(elevation = 8.dp),
-        containerColor = MaterialTheme.colorScheme.background
+        containerColor = MaterialTheme.colorScheme.surfaceBright
     ){
         NavigationBarItem(
             selected = true,

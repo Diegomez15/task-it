@@ -1,213 +1,317 @@
 package com.example.task_it.presentation.tasks.form
 
-import androidx.compose.foundation.background
+import android.app.Application
+import android.app.DatePickerDialog
+import android.app.TimePickerDialog
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.input.pointer.motionEventSpy
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.example.task_it.presentation.theme.TextSecondary
-import com.example.task_it.presentation.theme.YellowPrimary
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.task_it.domain.model.TaskPriority
 import java.time.LocalDate
 import java.time.LocalTime
+import java.time.format.DateTimeFormatter
 
 @Composable
 fun TaskFormScreen(
-    viewModel: TaskFormViewModel = TaskFormViewModel(),
-    onCancel: () -> Unit = {},
-    onCreateTask: () -> Unit = {}
+    onCancel: () -> Unit,
+    onCreateTask: () -> Unit
 ) {
-    val uiState by viewModel.uiState.collectAsState()
+    val context = LocalContext.current
 
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.background,
-    ) {
+    // ViewModel con Application (AndroidViewModel)
+    val viewModel: TaskFormViewModel = viewModel(
+        factory = object : ViewModelProvider.Factory {
+            @Suppress("UNCHECKED_CAST")
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                return TaskFormViewModel(context.applicationContext as Application) as T
+            }
+        }
+    )
+
+    val state by viewModel.uiState.collectAsState()
+    val scrollState = rememberScrollState()
+
+    val dateFormatter = remember { DateTimeFormatter.ofPattern("MM / dd / yyyy") }
+    val timeFormatter = remember { DateTimeFormatter.ofPattern("HH:mm") }
+
+    val datePickerDialog = remember {
+        DatePickerDialog(
+            context,
+            { _, year, month, day ->
+                viewModel.onDateChange(LocalDate.of(year, month + 1, day))
+            },
+            state.date.year,
+            state.date.monthValue - 1,
+            state.date.dayOfMonth
+        )
+    }
+
+    val timePickerDialog = remember {
+        TimePickerDialog(
+            context,
+            { _, hour, minute ->
+                viewModel.onTimeChange(LocalTime.of(hour, minute))
+            },
+            state.time?.hour ?: LocalTime.now().hour,
+            state.time?.minute ?: LocalTime.now().minute,
+            true
+        )
+    }
+
+    Scaffold { innerPadding ->
         Column(
             modifier = Modifier
+                .padding(innerPadding)
+                .padding(horizontal = 16.dp, vertical = 8.dp)
                 .fillMaxSize()
-                .padding(30.dp)
+                .verticalScroll(scrollState)
         ) {
-
-            // ---------- HEADER ----------
+            // Cabecera similar a la captura
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.Top
             ) {
-                Column {
+                Column(
+                    modifier = Modifier.weight(1f)
+                ) {
                     Text(
                         text = "Nueva tarea",
-                        style = MaterialTheme.typography.titleLarge.copy(
-                            fontWeight = FontWeight.Bold
-                        )
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold
                     )
+                    Spacer(modifier = Modifier.height(4.dp))
                     Text(
                         text = "Completa los detalles de tu nueva tarea",
-                        color = TextSecondary,
-                        fontSize = 14.sp
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
 
                 IconButton(onClick = onCancel) {
-                    Icon(Icons.Default.Close, contentDescription = "Cerrar")
+                    Icon(
+                        imageVector = Icons.Default.Close,
+                        contentDescription = "Cerrar"
+                    )
                 }
             }
 
-            Spacer(Modifier.height(30.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-            // ---------- CAMPO TÍTULO ----------
-            CardInputSection(title = "Título") {
+            // Sección Título
+            FormSectionCard(title = "Título") {
                 OutlinedTextField(
-                    value = uiState.title,
+                    value = state.title,
                     onValueChange = viewModel::onTitleChange,
-                    placeholder = { Text("Escribe el título de la tarea") },
+                    singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = YellowPrimary,
-                        cursorColor = YellowPrimary
-                    )
+                    placeholder = { Text("Escribe el título de la tarea") }
                 )
             }
 
-            Spacer(Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
-            // ---------- PRIORIDAD ----------
-            CardInputSection(title = "Nivel de importancia") {
+            // Sección Nivel de importancia
+            FormSectionCard(title = "Nivel de importancia") {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    PriorityOption("Crítica", TaskPriority.CRITICA, uiState, viewModel)
-                    PriorityOption("Alta", TaskPriority.ALTA, uiState, viewModel)
-                    PriorityOption("Media", TaskPriority.MEDIA, uiState, viewModel)
-                    PriorityOption("Baja", TaskPriority.BAJA, uiState, viewModel)
+                    PriorityRow(
+                        selected = state.priority,
+                        onPrioritySelected = { viewModel.onPriorityChange(it)}
+                    )
                 }
             }
 
-            Spacer(Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
-            // ---------- FECHA Y HORA ----------
-            CardInputSection(title = "Fecha y hora") {
-
+            // Sección Fecha y hora
+            FormSectionCard(title = "Fecha y hora") {
                 Row(
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    OutlinedTextField(
-                        value = uiState.date?.toString() ?: "",
-                        onValueChange = {},
-                        placeholder = { Text("mm / dd / yyyy") },
-                        modifier = Modifier.weight(1f),
-                        enabled = false
-                    )
+                    Column(
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text(
+                            text = "Fecha",
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        OutlinedButton(
+                            onClick = { datePickerDialog.show() },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.buttonColors(
+                                contentColor = MaterialTheme.colorScheme.onBackground,
+                                containerColor = MaterialTheme.colorScheme.surfaceContainer)
+                        ) {
+                            Text(state.date.format(dateFormatter))
+                        }
+                    }
 
-                    OutlinedTextField(
-                        value = uiState.time?.toString() ?: "",
-                        onValueChange = {},
-                        placeholder = { Text("--:--") },
-                        modifier = Modifier.weight(1f),
-                        enabled = false
-                    )
+                    Column(
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text(
+                            text = "Hora",
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        OutlinedButton(
+                            onClick = { timePickerDialog.show() },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.buttonColors(
+                                contentColor = MaterialTheme.colorScheme.onBackground,
+                                containerColor = MaterialTheme.colorScheme.surfaceContainer)
+                        ) {
+                            Text(state.time?.format(timeFormatter) ?: "--:--")
+                        }
+                    }
                 }
             }
 
-            Spacer(Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
-            // ---------- UBICACIÓN ----------
-            CardInputSection(title = "Ubicación (opcional)") {
+            // Sección Ubicación (opcional)
+            FormSectionCard(title = "Ubicación (opcional)") {
                 OutlinedTextField(
-                    value = uiState.location,
+                    value = state.location,
                     onValueChange = viewModel::onLocationChange,
-                    placeholder = { Text("Ej: Oficina, Casa, Reunión online") },
+                    singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
+                    placeholder = { Text("Ej: Oficina, Casa, Reunión online") }
                 )
             }
 
-            Spacer(Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
-            // ---------- BOTONES ----------
+            // Botones inferiores: Cancelar / Crear tarea
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                OutlinedButton(
+                OutlinedButton (
                     onClick = onCancel,
-                    shape = RoundedCornerShape(12.dp),
-                    modifier = Modifier.height(45.dp).width(150.dp),
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.buttonColors(
+                        contentColor = MaterialTheme.colorScheme.onBackground,
+                        containerColor = MaterialTheme.colorScheme.surfaceContainer
+                    )
                 ) {
                     Text("Cancelar")
                 }
 
+                val isCreateEnabled = state.title.isNotBlank() && state.description.isNotBlank()
+
                 Button(
-                    onClick = onCreateTask,
-                    shape = RoundedCornerShape(12.dp),
-                    modifier = Modifier.height(45.dp).width(150.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = YellowPrimary,
-                        contentColor = MaterialTheme.colorScheme.onPrimary
-                    )
+                    onClick = {
+                        viewModel.createTask()
+                        onCreateTask()
+                    },
+                    modifier = Modifier.weight(1f),
+                    enabled = isCreateEnabled
                 ) {
                     Text("Crear tarea")
                 }
             }
+
+            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 }
 
+// Card contenedora de cada bloque, similar a tu diseño original
 @Composable
-fun PriorityOption(
-    label: String,
-    priority: TaskPriority,
-    uiState: TaskFormUiState,
-    viewModel: TaskFormViewModel
-) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        RadioButton(
-            selected = uiState.priority == priority,
-            onClick = { viewModel.onPriorityChange(priority) },
-            colors = RadioButtonDefaults.colors(
-                selectedColor = YellowPrimary
-            )
-        )
-        Text(label, fontSize = 16.sp)
-    }
-}
-
-@Composable
-fun CardInputSection(
+private fun FormSectionCard(
     title: String,
     content: @Composable ColumnScope.() -> Unit
 ) {
-    Column {
-        Text(
-            text = title,
-            fontWeight = FontWeight.SemiBold,
-            fontSize = 15.sp
+    ElevatedCard(
+        modifier = Modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.large,
+        colors = CardDefaults.elevatedCardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceBright
+        ),
+        elevation = CardDefaults.elevatedCardElevation(
+            defaultElevation = 2.dp
         )
-        Spacer(Modifier.height(8.dp))
-
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(16.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .padding(horizontal = 16.dp, vertical = 14.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(MaterialTheme.colorScheme.surfaceBright)
-                    .padding(16.dp),
-                content = content
+            Text(
+                text = title,
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onBackground
             )
+            content()
         }
     }
+}
+
+
+// Chips para prioridad (manteniendo tu cambio)
+@Composable
+private fun PriorityRow(
+    selected: TaskPriority,
+    onPrioritySelected: (TaskPriority) -> Unit
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        PriorityChip(
+            label = "Crítica",
+            selected = selected == TaskPriority.CRITICA,
+            onClick = { onPrioritySelected(TaskPriority.CRITICA) }
+        )
+        PriorityChip(
+            label = "Alta",
+            selected = selected == TaskPriority.ALTA,
+            onClick = { onPrioritySelected(TaskPriority.ALTA) }
+        )
+        PriorityChip(
+            label = "Media",
+            selected = selected == TaskPriority.MEDIA,
+            onClick = { onPrioritySelected(TaskPriority.MEDIA) }
+        )
+        PriorityChip(
+            label = "Baja",
+            selected = selected == TaskPriority.BAJA,
+            onClick = { onPrioritySelected(TaskPriority.BAJA) }
+        )
+    }
+}
+
+@Composable
+private fun PriorityChip(
+    label: String,
+    selected: Boolean,
+    onClick: () -> Unit
+) {
+    FilterChip(
+        selected = selected,
+        onClick = onClick,
+        label = { Text(label) },
+        colors = FilterChipDefaults.filterChipColors(
+            selectedContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
+            containerColor = MaterialTheme.colorScheme.surface
+        )
+    )
 }
