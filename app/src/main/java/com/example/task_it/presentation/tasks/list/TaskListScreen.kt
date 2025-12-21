@@ -35,33 +35,57 @@ fun TaskListScreen(
     modifier: Modifier = Modifier,
     onAddTaskClick: () -> Unit = {}
 ) {
-    Scaffold(
-        topBar = { TaskTopBar() },
-        bottomBar = { TaskBottomBar() },
-        containerColor = MaterialTheme.colorScheme.background
-    ) { innerPadding ->
-        Box(
-            modifier = modifier
-                .fillMaxSize()
-                .padding(innerPadding),
-            contentAlignment = Alignment.Center
-        ) {
-            EmptyTaskState(onAddTaskClick = onAddTaskClick)
-        }
-    }
     val viewModel: TaskListViewModel = viewModel()
     val tasks by viewModel.tasks.collectAsState()
 
-    LazyColumn {
-        items(tasks) { task ->
-            Text(
-                text = task.title,
-                modifier = Modifier.padding(16.dp)
-            )
+    Scaffold(
+        topBar = { TaskTopBar() },
+        bottomBar = { TaskBottomBar() },
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = onAddTaskClick,
+                containerColor = YellowPrimary
+            ) {
+                Icon(Icons.Filled.Add, contentDescription = "Añadir tarea")
+            }
+        },
+        containerColor = MaterialTheme.colorScheme.background
+    ) { innerPadding ->
+
+        // ✅ Todo el contenido de la pantalla va aquí dentro
+        Column(
+            modifier = modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+        ) {
+
+            if (tasks.isEmpty()) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    EmptyTaskState(onAddTaskClick = onAddTaskClick)
+                }
+            } else {
+                // Aquí luego metemos tus chips de filtro, ahora solo lista bien colocada:
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(vertical = 12.dp, horizontal = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    items(tasks, key = { it.id }) { task ->
+                        com.example.task_it.presentation.components.TaskItem(
+                            task = task,
+                            onEdit = { /* TODO */ },
+                            onDelete = { /* TODO */ }
+                        )
+                    }
+                }
+            }
         }
     }
-
 }
+
 
 @Composable
 private fun TaskTopBar() {
