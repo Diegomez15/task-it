@@ -7,6 +7,16 @@ import com.example.task_it.presentation.navigation.AppNavHost
 import com.example.task_it.presentation.theme.TaskitTheme
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.SystemBarStyle
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import android.app.Activity
+import androidx.compose.runtime.SideEffect
+import androidx.compose.ui.platform.LocalView
+import androidx.core.view.WindowCompat
+
+
 
 
 class MainActivity : ComponentActivity() {
@@ -24,9 +34,26 @@ class MainActivity : ComponentActivity() {
             )
         )
         setContent {
-            TaskitTheme {
-                AppNavHost()   // Por ahora solo mostrará la HomeScreen
+            var useDarkTheme by rememberSaveable {
+                mutableStateOf(false)
+            }
+
+            val view = LocalView.current
+            val isDark = useDarkTheme
+
+            SideEffect {
+                val window = (view.context as Activity).window
+                WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !isDark
+            }
+
+
+            TaskitTheme(useDarkTheme = useDarkTheme) {
+                AppNavHost(
+                    isDarkTheme = useDarkTheme,
+                    onToggleTheme = { useDarkTheme = !useDarkTheme }
+                )
             }
         }
+
     }
 }

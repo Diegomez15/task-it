@@ -29,21 +29,29 @@ import androidx.compose.runtime.getValue
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.windowInsetsPadding
-
-
-
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 
 
 @Composable
 fun TaskListScreen(
     modifier: Modifier = Modifier,
-    onAddTaskClick: () -> Unit = {}
-) {
+    onAddTaskClick: () -> Unit = {},
+    isDarkTheme: Boolean,
+    onToggleTheme: () -> Unit
+)
+{
     val viewModel: TaskListViewModel = viewModel()
     val tasks by viewModel.tasks.collectAsState()
 
     Scaffold(
-        topBar = { TaskTopBar() },
+        topBar = {
+            TaskTopBar(
+                isDarkTheme = isDarkTheme,
+                onToggleTheme = onToggleTheme
+            )
+        },
         bottomBar = { TaskBottomBar() },
         floatingActionButton = {
             FloatingActionButton(
@@ -92,7 +100,12 @@ fun TaskListScreen(
 
 
 @Composable
-private fun TaskTopBar() {
+private fun TaskTopBar(
+    isDarkTheme: Boolean,
+    onToggleTheme: () -> Unit
+
+) {
+    var showThemeConfirm by remember { mutableStateOf(false) }
     Surface(
         shadowElevation = 1.dp,
         color = MaterialTheme.colorScheme.surfaceBright
@@ -106,7 +119,7 @@ private fun TaskTopBar() {
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Row(
-                modifier = Modifier.offset(y = (-12).dp), // 👈 mueve todo hacia arriba
+                modifier = Modifier.offset(y = (-13).dp), // 👈 mueve todo hacia arriba
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Box(
@@ -132,19 +145,58 @@ private fun TaskTopBar() {
             }
 
             Row(
-                modifier = Modifier.offset(y = (-12).dp),
+                modifier = Modifier.offset(y = (-13).dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                IconButton(onClick = { /* TODO: Cambiar tema */ }) {
+                IconButton(onClick = { showThemeConfirm = true }) {
                     Icon(
                         imageVector = Icons.Filled.LightMode,
                         contentDescription = "Cambiar tema"
                     )
                 }
+
             }
         }
     }
+    if (showThemeConfirm) {
+        val targetText = if (isDarkTheme) "modo claro" else "modo oscuro"
+
+        AlertDialog(
+            onDismissRequest = { showThemeConfirm = false },
+            containerColor = MaterialTheme.colorScheme.surfaceBright,
+            title = { Text("Cambiar tema") },
+            text = { Text("¿Quieres cambiar a $targetText?") },
+            dismissButton = {
+                OutlinedButton(
+                    onClick = { showThemeConfirm = false },
+                    shape = RoundedCornerShape(50),
+                    modifier = Modifier
+                        .height(40.dp)
+                        .widthIn(min = 120.dp)
+                ) { Text("Cancelar") }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showThemeConfirm = false
+                        onToggleTheme()
+                    },
+                    shape = RoundedCornerShape(50),
+                    modifier = Modifier
+                        .height(40.dp)
+                        .widthIn(min = 120.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = YellowPrimary,
+                        contentColor = MaterialTheme.colorScheme.onPrimary
+                    )
+                ) { Text("Cambiar") }
+            }
+        )
+    }
 }
+
+
+
 
 
 @Composable

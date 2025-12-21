@@ -8,7 +8,11 @@ import com.example.task_it.presentation.tasks.form.TaskFormScreen
 import com.example.task_it.presentation.tasks.list.TaskListScreen
 
 @Composable
-fun AppNavHost() {
+fun AppNavHost(
+    isDarkTheme: Boolean,
+    onToggleTheme: () -> Unit
+) {
+
     val navController = rememberNavController()
 
     NavHost(
@@ -18,11 +22,12 @@ fun AppNavHost() {
 
         composable(NavRoutes.TASK_LIST) {
             TaskListScreen(
-                onAddTaskClick = {
-                    navController.navigate(NavRoutes.TASK_FORM)
-                }
+                onAddTaskClick = { navController.navigate(NavRoutes.TASK_FORM) },
+                isDarkTheme = isDarkTheme,
+                onToggleTheme = onToggleTheme
             )
         }
+
 
         composable(NavRoutes.TASK_FORM) {
             TaskFormScreen(
