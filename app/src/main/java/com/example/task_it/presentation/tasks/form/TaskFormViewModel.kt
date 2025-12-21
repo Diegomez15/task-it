@@ -40,7 +40,7 @@ class TaskFormViewModel(application: Application) : AndroidViewModel(application
     }
 
     fun onDescriptionChange(value: String) {
-        _uiState.value = _uiState.value.copy(location = value)
+        _uiState.value = _uiState.value.copy(description = value)
     }
 
     fun createTask() {
@@ -48,7 +48,7 @@ class TaskFormViewModel(application: Application) : AndroidViewModel(application
 
         val task = Task(
             title = state.title,
-            description = "Sin descripción",
+            description = state.description,
             priority = state.priority,
             date = state.date,
             time = state.time,

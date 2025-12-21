@@ -123,6 +123,18 @@ fun TaskFormScreen(
 
             Spacer(modifier = Modifier.height(12.dp))
 
+            FormSectionCard(title = "Descripción") {
+                OutlinedTextField(
+                    value = state.description,
+                    onValueChange = viewModel::onDescriptionChange,
+                    maxLines = 3,
+                    modifier = Modifier.fillMaxWidth(),
+                    placeholder = { Text("Describe la tarea en detalle") }
+                )
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
             // Sección Nivel de importancia
             FormSectionCard(title = "Nivel de importancia") {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -214,7 +226,7 @@ fun TaskFormScreen(
                     Text("Cancelar")
                 }
 
-                val isCreateEnabled = state.title.isNotBlank() && state.description.isNotBlank()
+                val isCreateEnabled = state.title.isNotBlank()
 
                 Button(
                     onClick = {
