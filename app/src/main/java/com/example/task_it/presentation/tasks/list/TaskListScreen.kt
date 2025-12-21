@@ -26,6 +26,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.task_it.presentation.theme.TextSecondary
 import com.example.task_it.presentation.theme.YellowPrimary
 import androidx.compose.runtime.getValue
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.windowInsetsPadding
+
 
 
 
@@ -96,13 +100,14 @@ private fun TaskTopBar() {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 20.dp),
+                .windowInsetsPadding(WindowInsets.statusBars) // ✅ separa del status bar
+                .padding(horizontal = 16.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(top = 15.dp)
+                modifier = Modifier.offset(y = (-12).dp), // 👈 mueve todo hacia arriba
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Box(
                     modifier = Modifier
@@ -127,8 +132,8 @@ private fun TaskTopBar() {
             }
 
             Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(top = 15.dp)
+                modifier = Modifier.offset(y = (-12).dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 IconButton(onClick = { /* TODO: Cambiar tema */ }) {
                     Icon(
@@ -136,11 +141,11 @@ private fun TaskTopBar() {
                         contentDescription = "Cambiar tema"
                     )
                 }
-                // Aquí podrías añadir un avatar / icono de usuario si quieres
             }
         }
     }
 }
+
 
 @Composable
 private fun EmptyTaskState(
