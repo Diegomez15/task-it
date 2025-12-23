@@ -19,9 +19,6 @@ class TaskFormViewModel(application: Application) : AndroidViewModel(application
 
     private val addTaskUseCase = AppModule.provideAddTaskUseCase(application)
 
-    fun onTitleChange(value: String) {
-        _uiState.value = _uiState.value.copy(title = value)
-    }
 
     fun onPriorityChange(value: TaskPriority) {
         _uiState.value = _uiState.value.copy(priority = value)
@@ -35,13 +32,24 @@ class TaskFormViewModel(application: Application) : AndroidViewModel(application
         _uiState.value = _uiState.value.copy(time = time)
     }
 
-    fun onLocationChange(value: String) {
-        _uiState.value = _uiState.value.copy(location = value)
+    fun onTitleChange(value: String) {
+        _uiState.value = _uiState.value.copy(
+            title = value.take(TaskFormLimits.TITLE_MAX)
+        )
     }
 
     fun onDescriptionChange(value: String) {
-        _uiState.value = _uiState.value.copy(description = value)
+        _uiState.value = _uiState.value.copy(
+            description = value.take(TaskFormLimits.DESCRIPTION_MAX)
+        )
     }
+
+    fun onLocationChange(value: String) {
+        _uiState.value = _uiState.value.copy(
+            location = value.take(TaskFormLimits.LOCATION_MAX)
+        )
+    }
+
 
     fun createTask() {
         val state = _uiState.value

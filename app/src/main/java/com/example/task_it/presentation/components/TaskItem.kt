@@ -14,6 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.task_it.domain.model.Task
 import com.example.task_it.presentation.theme.YellowPrimary
@@ -59,18 +60,22 @@ fun TaskItem(
 
             Column(
                 modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(10.dp)
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.Top
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
                         text = task.title,
-                        style = MaterialTheme.typography.titleMedium
+                        style = MaterialTheme.typography.titleSmall,
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(top = 2.dp)
+                            .padding(end = 8.dp),
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
                     )
-
-                    Spacer(modifier = Modifier.weight(1f))
 
                     IconButton(onClick = { onEdit(task) }) {
                         Icon(Icons.Filled.Edit, contentDescription = "Editar")
@@ -79,6 +84,7 @@ fun TaskItem(
                         Icon(Icons.Filled.DeleteOutline, contentDescription = "Eliminar")
                     }
                 }
+
 
                 // Fecha
                 MetaRow(

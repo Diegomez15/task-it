@@ -1,5 +1,6 @@
 package com.example.task_it.presentation.tasks.list
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -32,8 +33,11 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import com.example.task_it.domain.model.Task
+import com.example.task_it.presentation.components.TaskItem
 
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun TaskListScreen(
     modifier: Modifier = Modifier,
@@ -44,6 +48,8 @@ fun TaskListScreen(
 {
     val viewModel: TaskListViewModel = viewModel()
     val tasks by viewModel.tasks.collectAsState()
+    var taskToDelete by remember { mutableStateOf<Task?>(null) }
+
 
     Scaffold(
         topBar = {
@@ -86,15 +92,65 @@ fun TaskListScreen(
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     items(tasks, key = { it.id }) { task ->
-                        com.example.task_it.presentation.components.TaskItem(
+                        TaskItem(
                             task = task,
                             onEdit = { /* TODO */ },
-                            onDelete = { /* TODO */ }
+                            onDelete = { taskToDelete = it },
+                            modifier = Modifier
+                                .animateItemPlacement()
+                                .padding(horizontal = 16.dp)
                         )
                     }
+
                 }
             }
         }
+    }
+    if (taskToDelete != null) {
+        AlertDialog(
+            onDismissRequest = { taskToDelete = null },
+            containerColor = MaterialTheme.colorScheme.surfaceBright,
+            title = { Text("Eliminar tarea") },
+            text = { Text("¿Seguro que quieres eliminar “${taskToDelete!!.title}”?") },
+            confirmButton = {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    OutlinedButton(
+                        onClick = { taskToDelete = null },
+                        shape = RoundedCornerShape(50),
+                        modifier = Modifier
+                            .height(40.dp)
+                            .widthIn(min = 120.dp)
+                    ) {
+                        Text("Cancelar")
+                    }
+
+                    Spacer(modifier = Modifier.width(12.dp))
+
+                    Button(
+                        onClick = {
+                            viewModel.deleteTask(taskToDelete!!)
+                            taskToDelete = null
+                        },
+                        shape = RoundedCornerShape(50),
+                        modifier = Modifier
+                            .height(40.dp)
+                            .widthIn(min = 120.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = YellowPrimary,
+                            contentColor = MaterialTheme.colorScheme.onPrimary
+                        )
+                    ) {
+                        Text("Eliminar")
+                    }
+                }
+            }
+
+        )
     }
 }
 
@@ -119,7 +175,7 @@ private fun TaskTopBar(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Row(
-                modifier = Modifier.offset(y = (-13).dp), // 👈 mueve todo hacia arriba
+                //modifier = Modifier.offset(y = (-13).dp), // 👈 mueve todo hacia arriba
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Box(
@@ -145,7 +201,7 @@ private fun TaskTopBar(
             }
 
             Row(
-                modifier = Modifier.offset(y = (-13).dp),
+                //modifier = Modifier.offset(y = (-13).dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 IconButton(onClick = { showThemeConfirm = true }) {
@@ -263,7 +319,10 @@ private fun EmptyTaskState(
 @Composable
 private fun TaskBottomBar() {
     NavigationBar(
-        containerColor = MaterialTheme.colorScheme.surfaceBright
+        containerColor = MaterialTheme.colorScheme.surfaceBright,
+        modifier = Modifier.shadow(
+            elevation = 10.dp
+        )
     ){
         NavigationBarItem(
             selected = true,

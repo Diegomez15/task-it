@@ -115,9 +115,12 @@ fun TaskFormScreen(
                 OutlinedTextField(
                     value = state.title,
                     onValueChange = viewModel::onTitleChange,
+                    label = { Text("Título") },
+                    supportingText = {
+                        Text("${state.title.length}/${TaskFormLimits.TITLE_MAX}")
+                    },
                     singleLine = true,
-                    modifier = Modifier.fillMaxWidth(),
-                    placeholder = { Text("Escribe el título de la tarea") }
+                    modifier = Modifier.fillMaxWidth()
                 )
             }
 
@@ -127,10 +130,14 @@ fun TaskFormScreen(
                 OutlinedTextField(
                     value = state.description,
                     onValueChange = viewModel::onDescriptionChange,
+                    label = { Text("Descripción") },
+                    supportingText = {
+                        Text("${state.description.length}/${TaskFormLimits.DESCRIPTION_MAX}")
+                    },
                     maxLines = 3,
-                    modifier = Modifier.fillMaxWidth(),
-                    placeholder = { Text("Describe la tarea en detalle") }
+                    modifier = Modifier.fillMaxWidth()
                 )
+
             }
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -200,12 +207,17 @@ fun TaskFormScreen(
             // Sección Ubicación (opcional)
             FormSectionCard(title = "Ubicación (opcional)") {
                 OutlinedTextField(
-                    value = state.location,
+                    value = state.location ?: "",
                     onValueChange = viewModel::onLocationChange,
+                    label = { Text("Ubicación (opcional)") },
+                    supportingText = {
+                        val text = state.location ?: ""
+                        Text("${text.length}/${TaskFormLimits.LOCATION_MAX}")
+                    },
                     singleLine = true,
-                    modifier = Modifier.fillMaxWidth(),
-                    placeholder = { Text("Ej: Oficina, Casa, Reunión online") }
+                    modifier = Modifier.fillMaxWidth()
                 )
+
             }
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -226,7 +238,8 @@ fun TaskFormScreen(
                     Text("Cancelar")
                 }
 
-                val isCreateEnabled = state.title.isNotBlank()
+                val isCreateEnabled = state.title.trim().isNotEmpty()
+
 
                 Button(
                     onClick = {
