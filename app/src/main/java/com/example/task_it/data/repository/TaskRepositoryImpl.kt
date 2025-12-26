@@ -29,4 +29,9 @@ class TaskRepositoryImpl(
             list.map { it.toDomain() }
         }
     }
+
+    override suspend fun getTaskById(id: Long): Task? {
+        return taskDao.getTaskById(id)?.toDomain()
+    }
+
 }

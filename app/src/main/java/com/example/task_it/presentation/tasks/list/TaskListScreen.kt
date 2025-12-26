@@ -41,6 +41,7 @@ import com.example.task_it.presentation.theme.YellowPrimary
 fun TaskListScreen(
     modifier: Modifier = Modifier,
     onAddTaskClick: () -> Unit = {},
+    onEditTaskClick: (Long) -> Unit,
     isDarkTheme: Boolean,
     onToggleTheme: () -> Unit
 ) {
@@ -122,7 +123,7 @@ fun TaskListScreen(
                         items(filteredTasks, key = { it.id }) { task ->
                             TaskItem(
                                 task = task,
-                                onEdit = { /* TODO */ },
+                                onEdit = { onEditTaskClick(task.id) },
                                 onDelete = { taskToDelete = it },
                                 modifier = Modifier
                                     .animateItemPlacement()
@@ -328,7 +329,8 @@ private fun EmptyTaskState(
 private fun TaskBottomBar() {
     NavigationBar(
         containerColor = MaterialTheme.colorScheme.surfaceBright,
-        modifier = Modifier.shadow(elevation = 10.dp)
+        modifier = Modifier.shadow(elevation = 10.dp),
+
     ) {
         NavigationBarItem(
             selected = true,

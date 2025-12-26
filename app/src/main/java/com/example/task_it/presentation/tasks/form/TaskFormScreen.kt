@@ -26,17 +26,21 @@ import java.time.format.DateTimeFormatter
 
 @Composable
 fun TaskFormScreen(
+    taskId: Long? = null,          // ✅ null = crear, id = editar
     onCancel: () -> Unit,
-    onCreateTask: () -> Unit
+    onCreateTask: () -> Unit        // (lo mantengo para no romper tu navegación: al guardar, haces popBackStack)
 ) {
     val context = LocalContext.current
 
-    // ViewModel con Application (AndroidViewModel)
+    // ✅ ViewModel con Application + taskId
     val viewModel: TaskFormViewModel = viewModel(
         factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                return TaskFormViewModel(context.applicationContext as Application) as T
+                return TaskFormViewModel(
+                    context.applicationContext as Application,
+                    taskId = taskId
+                ) as T
             }
         }
     )
@@ -44,10 +48,12 @@ fun TaskFormScreen(
     val state by viewModel.uiState.collectAsState()
     val scrollState = rememberScrollState()
 
+    val isEditMode = taskId != null
+
     val dateFormatter = remember { DateTimeFormatter.ofPattern("MM / dd / yyyy") }
     val timeFormatter = remember { DateTimeFormatter.ofPattern("HH:mm") }
 
-    // Re-crear dialogs cuando cambie la fecha para que abran en la fecha actual del state
+    // ✅ Re-crear dialogs cuando cambia el state (para que al editar se abran en la fecha/hora cargada)
     val datePickerDialog = remember(state.date) {
         DatePickerDialog(
             context,
@@ -72,45 +78,49 @@ fun TaskFormScreen(
         )
     }
 
-    val isCreateEnabled = state.title.trim().isNotEmpty()
+    // ✅ Obligatorios: título + descripción (ubicación y hora opcionales)
+    val isSubmitEnabled = state.title.trim().isNotEmpty() && state.description.trim().isNotEmpty()
 
     Scaffold(
         modifier = Modifier.imePadding(),
         bottomBar = {
             TaskFormBottomBar(
-                isCreateEnabled = isCreateEnabled,
+                isEnabled = isSubmitEnabled,
+                isEditMode = isEditMode,
                 onCancel = onCancel,
-                onCreate = {
-                    viewModel.createTask()
+                onSubmit = {
+                    viewModel.submitTask()
                     onCreateTask()
                 }
             )
         }
     ) { innerPadding ->
+
         Column(
             modifier = Modifier
                 .padding(innerPadding)
-                .padding(horizontal = 12.dp, vertical = 8.dp)
+                .padding(horizontal = 16.dp, vertical = 8.dp)
                 .fillMaxSize()
                 .verticalScroll(scrollState)
         ) {
-            // Cabecera similar a la captura
+            // Cabecera
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.Top
             ) {
-                Column(
-                    modifier = Modifier.weight(1f)
-                ) {
+                Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "Nueva tarea",
+                        text = if (isEditMode) "Editar tarea" else "Nueva tarea",
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "Completa los detalles de tu nueva tarea",
+                        text = if (isEditMode)
+                            "Modifica los detalles de tu tarea"
+                        else
+                            "Completa los detalles de tu nueva tarea",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -142,6 +152,7 @@ fun TaskFormScreen(
 
             Spacer(modifier = Modifier.height(12.dp))
 
+            // Sección Descripción
             FormSectionCard(title = "Descripción") {
                 OutlinedTextField(
                     value = state.description,
@@ -175,9 +186,7 @@ fun TaskFormScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    Column(
-                        modifier = Modifier.weight(1f)
-                    ) {
+                    Column(modifier = Modifier.weight(1f)) {
                         Text(
                             text = "Fecha",
                             style = MaterialTheme.typography.bodyMedium,
@@ -196,9 +205,7 @@ fun TaskFormScreen(
                         }
                     }
 
-                    Column(
-                        modifier = Modifier.weight(1f)
-                    ) {
+                    Column(modifier = Modifier.weight(1f)) {
                         Text(
                             text = "Hora",
                             style = MaterialTheme.typography.bodyMedium,
@@ -236,7 +243,7 @@ fun TaskFormScreen(
                 )
             }
 
-            // Deja aire al final para que el contenido no quede pegado a la bottomBar
+            // Aire al final para que no quede pegado a la bottomBar
             Spacer(modifier = Modifier.height(24.dp))
         }
     }
@@ -244,9 +251,10 @@ fun TaskFormScreen(
 
 @Composable
 private fun TaskFormBottomBar(
-    isCreateEnabled: Boolean,
+    isEnabled: Boolean,
+    isEditMode: Boolean,
     onCancel: () -> Unit,
-    onCreate: () -> Unit
+    onSubmit: () -> Unit
 ) {
     Surface(
         shadowElevation = 8.dp,
@@ -270,11 +278,11 @@ private fun TaskFormBottomBar(
             }
 
             Button(
-                onClick = onCreate,
+                onClick = onSubmit,
                 modifier = Modifier.weight(1f),
-                enabled = isCreateEnabled
+                enabled = isEnabled
             ) {
-                Text("Crear tarea")
+                Text(if (isEditMode) "Guardar cambios" else "Crear tarea")
             }
         }
     }
@@ -297,8 +305,7 @@ private fun FormSectionCard(
         )
     ) {
         Column(
-            modifier = Modifier
-                .padding(horizontal = 16.dp, vertical = 14.dp),
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             Text(
@@ -312,7 +319,6 @@ private fun FormSectionCard(
     }
 }
 
-// Chips para prioridad (manteniendo tu cambio)
 @Composable
 private fun PriorityRow(
     selected: TaskPriority,
@@ -348,6 +354,3 @@ private fun PriorityRow(
         )
     }
 }
-
-
-

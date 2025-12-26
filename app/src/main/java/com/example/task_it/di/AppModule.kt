@@ -8,6 +8,8 @@ import com.example.task_it.domain.repository.TaskRepository
 import com.example.task_it.domain.usecase.AddTaskUseCase
 import com.example.task_it.domain.usecase.GetTasksUseCase
 import com.example.task_it.domain.usecase.DeleteTaskUseCase
+import com.example.task_it.domain.usecase.GetTaskByIdUseCase
+import com.example.task_it.domain.usecase.UpdateTaskUseCase
 
 
 object AppModule {
@@ -37,5 +39,11 @@ object AppModule {
 
     fun provideDeleteTaskUseCase(context: Context): DeleteTaskUseCase =
         DeleteTaskUseCase(provideTaskRepository(context))
+
+    fun provideUpdateTaskUseCase(context: Context): UpdateTaskUseCase =
+        UpdateTaskUseCase(provideTaskRepository(context))
+
+    fun provideGetTaskByIdUseCase(context: Context): GetTaskByIdUseCase =
+        GetTaskByIdUseCase(provideTaskRepository(context))
 
 }
