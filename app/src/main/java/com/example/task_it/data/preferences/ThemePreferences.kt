@@ -13,10 +13,15 @@ class ThemePreferences(private val context: Context) {
 
     private val KEY_DARK_THEME = booleanPreferencesKey("dark_theme")
 
-    val darkThemeFlow: Flow<Boolean> =
-        context.dataStore.data.map { prefs -> prefs[KEY_DARK_THEME] ?: false }
+    // null = sin preferencia guardada (usar tema del sistema)
+    val darkThemePrefFlow: Flow<Boolean?> =
+        context.dataStore.data.map { prefs -> prefs[KEY_DARK_THEME] }
 
-    suspend fun setDarkTheme(enabled: Boolean) {
+    suspend fun setDarkThemePref(enabled: Boolean) {
         context.dataStore.edit { prefs -> prefs[KEY_DARK_THEME] = enabled }
+    }
+
+    suspend fun clearThemePref() {
+        context.dataStore.edit { prefs -> prefs.remove(KEY_DARK_THEME) }
     }
 }

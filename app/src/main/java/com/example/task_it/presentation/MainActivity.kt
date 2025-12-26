@@ -12,10 +12,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.lifecycleScope
-import com.example.task_it.data.preferences.ThemePreferences
 import com.example.task_it.presentation.navigation.AppNavHost
 import com.example.task_it.presentation.theme.TaskitTheme
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.flow.first
+import com.example.task_it.data.preferences.ThemePreferences
+
+
 
 class MainActivity : ComponentActivity() {
 
@@ -32,30 +36,38 @@ class MainActivity : ComponentActivity() {
                 darkScrim = android.graphics.Color.TRANSPARENT
             )
         )
+        val themePrefs = ThemePreferences(this)
+        val initialPref: Boolean? = runBlocking { themePrefs.darkThemePrefFlow.first() }
+
 
         setContent {
-            //1) Leer tema persistido desde DataStore
-            val themePrefs = ThemePreferences(this)
-            val useDarkTheme by themePrefs.darkThemeFlow.collectAsState(initial = false)
+            val pref by themePrefs.darkThemePrefFlow.collectAsState(initial = initialPref)
 
-            //2) Ajustar iconos del status bar según el tema
+            // Tema del sistema (solo se usa si pref == null)
+            val systemDark = androidx.compose.foundation.isSystemInDarkTheme()
+
+            // ✅ tema efectivo: guardado si existe, si no el del sistema
+            val useDarkTheme = pref ?: systemDark
+
+            // (tu SideEffect de status bar usando useDarkTheme)
             val view = LocalView.current
             SideEffect {
                 val window = (view.context as Activity).window
                 WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !useDarkTheme
             }
 
-            //3) Aplicar theme + navegación
             TaskitTheme(useDarkTheme = useDarkTheme) {
                 AppNavHost(
                     isDarkTheme = useDarkTheme,
                     onToggleTheme = {
                         lifecycleScope.launch {
-                            themePrefs.setDarkTheme(!useDarkTheme) // ✅ Guardar preferencia
+                            // Si no había preferencia, al pulsar guardamos la contraria al tema efectivo
+                            themePrefs.setDarkThemePref(!useDarkTheme)
                         }
                     }
                 )
             }
         }
+
     }
 }
