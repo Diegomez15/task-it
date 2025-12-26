@@ -19,6 +19,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.task_it.domain.model.TaskPriority
+import com.example.task_it.presentation.components.PriorityChip
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
@@ -46,7 +47,8 @@ fun TaskFormScreen(
     val dateFormatter = remember { DateTimeFormatter.ofPattern("MM / dd / yyyy") }
     val timeFormatter = remember { DateTimeFormatter.ofPattern("HH:mm") }
 
-    val datePickerDialog = remember {
+    // Re-crear dialogs cuando cambie la fecha para que abran en la fecha actual del state
+    val datePickerDialog = remember(state.date) {
         DatePickerDialog(
             context,
             { _, year, month, day ->
@@ -58,7 +60,7 @@ fun TaskFormScreen(
         )
     }
 
-    val timePickerDialog = remember {
+    val timePickerDialog = remember(state.time) {
         TimePickerDialog(
             context,
             { _, hour, minute ->
@@ -70,11 +72,25 @@ fun TaskFormScreen(
         )
     }
 
-    Scaffold { innerPadding ->
+    val isCreateEnabled = state.title.trim().isNotEmpty()
+
+    Scaffold(
+        modifier = Modifier.imePadding(),
+        bottomBar = {
+            TaskFormBottomBar(
+                isCreateEnabled = isCreateEnabled,
+                onCancel = onCancel,
+                onCreate = {
+                    viewModel.createTask()
+                    onCreateTask()
+                }
+            )
+        }
+    ) { innerPadding ->
         Column(
             modifier = Modifier
                 .padding(innerPadding)
-                .padding(horizontal = 16.dp, vertical = 8.dp)
+                .padding(horizontal = 12.dp, vertical = 8.dp)
                 .fillMaxSize()
                 .verticalScroll(scrollState)
         ) {
@@ -137,7 +153,6 @@ fun TaskFormScreen(
                     maxLines = 3,
                     modifier = Modifier.fillMaxWidth()
                 )
-
             }
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -147,7 +162,7 @@ fun TaskFormScreen(
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     PriorityRow(
                         selected = state.priority,
-                        onPrioritySelected = { viewModel.onPriorityChange(it)}
+                        onPrioritySelected = { viewModel.onPriorityChange(it) }
                     )
                 }
             }
@@ -174,7 +189,8 @@ fun TaskFormScreen(
                             modifier = Modifier.fillMaxWidth(),
                             colors = ButtonDefaults.buttonColors(
                                 contentColor = MaterialTheme.colorScheme.onBackground,
-                                containerColor = MaterialTheme.colorScheme.surfaceContainer)
+                                containerColor = MaterialTheme.colorScheme.surfaceContainer
+                            )
                         ) {
                             Text(state.date.format(dateFormatter))
                         }
@@ -194,7 +210,8 @@ fun TaskFormScreen(
                             modifier = Modifier.fillMaxWidth(),
                             colors = ButtonDefaults.buttonColors(
                                 contentColor = MaterialTheme.colorScheme.onBackground,
-                                containerColor = MaterialTheme.colorScheme.surfaceContainer)
+                                containerColor = MaterialTheme.colorScheme.surfaceContainer
+                            )
                         ) {
                             Text(state.time?.format(timeFormatter) ?: "--:--")
                         }
@@ -217,43 +234,48 @@ fun TaskFormScreen(
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
-
             }
 
+            // Deja aire al final para que el contenido no quede pegado a la bottomBar
             Spacer(modifier = Modifier.height(24.dp))
+        }
+    }
+}
 
-            // Botones inferiores: Cancelar / Crear tarea
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+@Composable
+private fun TaskFormBottomBar(
+    isCreateEnabled: Boolean,
+    onCancel: () -> Unit,
+    onCreate: () -> Unit
+) {
+    Surface(
+        shadowElevation = 8.dp,
+        color = MaterialTheme.colorScheme.surface
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            OutlinedButton(
+                onClick = onCancel,
+                modifier = Modifier.weight(1f),
+                colors = ButtonDefaults.buttonColors(
+                    contentColor = MaterialTheme.colorScheme.onBackground,
+                    containerColor = MaterialTheme.colorScheme.surfaceContainer
+                )
             ) {
-                OutlinedButton (
-                    onClick = onCancel,
-                    modifier = Modifier.weight(1f),
-                    colors = ButtonDefaults.buttonColors(
-                        contentColor = MaterialTheme.colorScheme.onBackground,
-                        containerColor = MaterialTheme.colorScheme.surfaceContainer
-                    )
-                ) {
-                    Text("Cancelar")
-                }
-
-                val isCreateEnabled = state.title.trim().isNotEmpty()
-
-
-                Button(
-                    onClick = {
-                        viewModel.createTask()
-                        onCreateTask()
-                    },
-                    modifier = Modifier.weight(1f),
-                    enabled = isCreateEnabled
-                ) {
-                    Text("Crear tarea")
-                }
+                Text("Cancelar")
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Button(
+                onClick = onCreate,
+                modifier = Modifier.weight(1f),
+                enabled = isCreateEnabled
+            ) {
+                Text("Crear tarea")
+            }
         }
     }
 }
@@ -290,7 +312,6 @@ private fun FormSectionCard(
     }
 }
 
-
 // Chips para prioridad (manteniendo tu cambio)
 @Composable
 private fun PriorityRow(
@@ -324,19 +345,4 @@ private fun PriorityRow(
     }
 }
 
-@Composable
-private fun PriorityChip(
-    label: String,
-    selected: Boolean,
-    onClick: () -> Unit
-) {
-    FilterChip(
-        selected = selected,
-        onClick = onClick,
-        label = { Text(label) },
-        colors = FilterChipDefaults.filterChipColors(
-            selectedContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
-            containerColor = MaterialTheme.colorScheme.surface
-        )
-    )
-}
+
