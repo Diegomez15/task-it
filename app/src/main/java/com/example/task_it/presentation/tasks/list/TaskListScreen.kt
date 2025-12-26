@@ -356,33 +356,38 @@ private fun TaskPriorityFilterChips(
         modifier = Modifier
             .fillMaxWidth()
             .horizontalScroll(scroll)
-            .padding(horizontal = 12.dp, vertical = 4.dp),
-        horizontalArrangement = Arrangement.spacedBy(14.dp)
+            .padding(horizontal = 12.dp, vertical = 12.dp),
+        horizontalArrangement = Arrangement.spacedBy(5.dp)
     ) {
         PriorityChip(
             label = "Todas",
             selected = selected == null,
-            onClick = { onSelectedChange(null) }
+            onClick = { onSelectedChange(null) },
+            modifier = Modifier.weight(1f)
         )
         PriorityChip(
             label = "Baja",
             selected = selected == TaskPriority.BAJA,
-            onClick = { onSelectedChange(TaskPriority.BAJA) }
+            onClick = { onSelectedChange(TaskPriority.BAJA) },
+            modifier = Modifier.weight(1f)
         )
         PriorityChip(
             label = "Media",
             selected = selected == TaskPriority.MEDIA,
-            onClick = { onSelectedChange(TaskPriority.MEDIA) }
+            onClick = { onSelectedChange(TaskPriority.MEDIA) },
+            modifier = Modifier.weight(1f)
         )
         PriorityChip(
             label = "Alta",
             selected = selected == TaskPriority.ALTA,
-            onClick = { onSelectedChange(TaskPriority.ALTA) }
+            onClick = { onSelectedChange(TaskPriority.ALTA) },
+            modifier = Modifier.weight(1f)
         )
         PriorityChip(
             label = "Crítica",
             selected = selected == TaskPriority.CRITICA,
-            onClick = { onSelectedChange(TaskPriority.CRITICA) }
+            onClick = { onSelectedChange(TaskPriority.CRITICA) },
+            modifier = Modifier.weight(1f)
         )
     }
 }
