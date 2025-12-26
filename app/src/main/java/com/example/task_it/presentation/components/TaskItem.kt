@@ -68,7 +68,7 @@ fun TaskItem(
                 ) {
                     Text(
                         text = task.title,
-                        style = MaterialTheme.typography.titleSmall,
+                        style = MaterialTheme.typography.titleMedium,
                         modifier = Modifier
                             .weight(1f)
                             .padding(top = 2.dp)

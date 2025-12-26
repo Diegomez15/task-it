@@ -189,7 +189,7 @@ fun TaskFormScreen(
                             modifier = Modifier.fillMaxWidth(),
                             colors = ButtonDefaults.buttonColors(
                                 contentColor = MaterialTheme.colorScheme.onBackground,
-                                containerColor = MaterialTheme.colorScheme.surfaceContainer
+                                containerColor = MaterialTheme.colorScheme.surfaceBright
                             )
                         ) {
                             Text(state.date.format(dateFormatter))
@@ -210,7 +210,7 @@ fun TaskFormScreen(
                             modifier = Modifier.fillMaxWidth(),
                             colors = ButtonDefaults.buttonColors(
                                 contentColor = MaterialTheme.colorScheme.onBackground,
-                                containerColor = MaterialTheme.colorScheme.surfaceContainer
+                                containerColor = MaterialTheme.colorScheme.surfaceBright
                             )
                         ) {
                             Text(state.time?.format(timeFormatter) ?: "--:--")
