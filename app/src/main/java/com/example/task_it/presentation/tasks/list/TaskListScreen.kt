@@ -2,6 +2,7 @@ package com.example.task_it.presentation.tasks.list
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -35,6 +36,10 @@ import com.example.task_it.presentation.components.PriorityChip
 import com.example.task_it.presentation.components.TaskItem
 import com.example.task_it.presentation.theme.TextSecondary
 import com.example.task_it.presentation.theme.YellowPrimary
+import com.example.task_it.presentation.tasks.detail.TaskDetailsBottomSheet
+
+
+
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -51,11 +56,14 @@ fun TaskListScreen(
     var taskToDelete by remember { mutableStateOf<Task?>(null) }
     var selectedPriority by rememberSaveable { mutableStateOf<TaskPriority?>(null) } // null = Todas
 
-    // ✅ APLICAR FILTRO AQUÍ
+
     val filteredTasks = remember(tasks, selectedPriority) {
         if (selectedPriority == null) tasks
         else tasks.filter { it.priority == selectedPriority }
     }
+
+    var selectedTask by remember { mutableStateOf<Task?>(null) }
+
 
     Scaffold(
         topBar = {
@@ -117,6 +125,9 @@ fun TaskListScreen(
                 } else {
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(
+                            bottom = 12.dp // ✅ deja aire para la bottom bar + FAB
+                        ),
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
 
@@ -128,6 +139,7 @@ fun TaskListScreen(
                                 modifier = Modifier
                                     .animateItemPlacement()
                                     .padding(horizontal = 12.dp)
+                                    .clickable { selectedTask = task }
                             )
                         }
                     }
@@ -135,6 +147,22 @@ fun TaskListScreen(
             }
         }
     }
+
+    selectedTask?.let { task ->
+        TaskDetailsBottomSheet(
+            task = task,
+            onDismiss = { selectedTask = null },
+            onDelete = {
+                selectedTask = null
+                taskToDelete = task // ✅ usa tu dialog de confirmación actual
+            },
+            onEdit = {
+                selectedTask = null
+                onEditTaskClick(task.id) // ✅ navega al form con id
+            }
+        )
+    }
+
 
     // Confirmación borrar
     if (taskToDelete != null) {
@@ -152,7 +180,7 @@ fun TaskListScreen(
                 ) {
                     OutlinedButton(
                         onClick = { taskToDelete = null },
-                        shape = RoundedCornerShape(50),
+                        shape = RoundedCornerShape(14.dp),
                         modifier = Modifier
                             .height(40.dp)
                             .widthIn(min = 120.dp)
@@ -167,7 +195,7 @@ fun TaskListScreen(
                             viewModel.deleteTask(taskToDelete!!)
                             taskToDelete = null
                         },
-                        shape = RoundedCornerShape(50),
+                        shape = RoundedCornerShape(14.dp),
                         modifier = Modifier
                             .height(40.dp)
                             .widthIn(min = 120.dp),
@@ -246,7 +274,7 @@ private fun TaskTopBar(
             dismissButton = {
                 OutlinedButton(
                     onClick = { showThemeConfirm = false },
-                    shape = RoundedCornerShape(50),
+                    shape = RoundedCornerShape(14.dp),
                     modifier = Modifier
                         .height(40.dp)
                         .widthIn(min = 120.dp)
@@ -258,7 +286,7 @@ private fun TaskTopBar(
                         showThemeConfirm = false
                         onToggleTheme()
                     },
-                    shape = RoundedCornerShape(50),
+                    shape = RoundedCornerShape(14.dp),
                     modifier = Modifier
                         .height(40.dp)
                         .widthIn(min = 120.dp),
@@ -328,8 +356,7 @@ private fun EmptyTaskState(
 @Composable
 private fun TaskBottomBar() {
     NavigationBar(
-        containerColor = MaterialTheme.colorScheme.surfaceBright,
-        modifier = Modifier.shadow(elevation = 10.dp)
+        containerColor = MaterialTheme.colorScheme.background,
 
 
     ) {

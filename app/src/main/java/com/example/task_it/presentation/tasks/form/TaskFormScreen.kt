@@ -5,6 +5,7 @@ import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
@@ -195,6 +196,7 @@ fun TaskFormScreen(
                         Spacer(modifier = Modifier.height(4.dp))
                         OutlinedButton(
                             onClick = { datePickerDialog.show() },
+                            shape = RoundedCornerShape(14.dp),
                             modifier = Modifier.fillMaxWidth(),
                             colors = ButtonDefaults.buttonColors(
                                 contentColor = MaterialTheme.colorScheme.onBackground,
@@ -214,6 +216,7 @@ fun TaskFormScreen(
                         Spacer(modifier = Modifier.height(4.dp))
                         OutlinedButton(
                             onClick = { timePickerDialog.show() },
+                            shape = RoundedCornerShape(14.dp),
                             modifier = Modifier.fillMaxWidth(),
                             colors = ButtonDefaults.buttonColors(
                                 contentColor = MaterialTheme.colorScheme.onBackground,
@@ -267,6 +270,7 @@ private fun TaskFormBottomBar(
         ) {
             OutlinedButton(
                 onClick = onCancel,
+                shape = RoundedCornerShape(14.dp),
                 modifier = Modifier.weight(1f),
                 colors = ButtonDefaults.buttonColors(
                     contentColor = MaterialTheme.colorScheme.primary,
@@ -278,6 +282,7 @@ private fun TaskFormBottomBar(
 
             Button(
                 onClick = onSubmit,
+                shape = RoundedCornerShape(14.dp),
                 modifier = Modifier.weight(1f),
                 enabled = isEnabled
             ) {
