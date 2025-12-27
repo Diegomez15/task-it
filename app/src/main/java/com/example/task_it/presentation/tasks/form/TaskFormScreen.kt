@@ -79,7 +79,7 @@ fun TaskFormScreen(
     }
 
     // ✅ Obligatorios: título + descripción (ubicación y hora opcionales)
-    val isSubmitEnabled = state.title.trim().isNotEmpty() && state.description.trim().isNotEmpty()
+    val isSubmitEnabled = state.title.trim().isNotEmpty()
 
     Scaffold(
         modifier = Modifier.imePadding(),
@@ -99,7 +99,7 @@ fun TaskFormScreen(
         Column(
             modifier = Modifier
                 .padding(innerPadding)
-                .padding(horizontal = 16.dp, vertical = 8.dp)
+                .padding(horizontal = 16.dp)
                 .fillMaxSize()
                 .verticalScroll(scrollState)
         ) {
@@ -153,7 +153,7 @@ fun TaskFormScreen(
             Spacer(modifier = Modifier.height(12.dp))
 
             // Sección Descripción
-            FormSectionCard(title = "Descripción") {
+            FormSectionCard(title = "Descripción (opcional)") {
                 OutlinedTextField(
                     value = state.description,
                     onValueChange = viewModel::onDescriptionChange,
@@ -198,7 +198,7 @@ fun TaskFormScreen(
                             modifier = Modifier.fillMaxWidth(),
                             colors = ButtonDefaults.buttonColors(
                                 contentColor = MaterialTheme.colorScheme.onBackground,
-                                containerColor = MaterialTheme.colorScheme.surfaceBright
+                                containerColor = MaterialTheme.colorScheme.background
                             )
                         ) {
                             Text(state.date.format(dateFormatter))
@@ -217,7 +217,7 @@ fun TaskFormScreen(
                             modifier = Modifier.fillMaxWidth(),
                             colors = ButtonDefaults.buttonColors(
                                 contentColor = MaterialTheme.colorScheme.onBackground,
-                                containerColor = MaterialTheme.colorScheme.surfaceBright
+                                containerColor = MaterialTheme.colorScheme.background
                             )
                         ) {
                             Text(state.time?.format(timeFormatter) ?: "--:--")
@@ -257,21 +257,20 @@ private fun TaskFormBottomBar(
     onSubmit: () -> Unit
 ) {
     Surface(
-        shadowElevation = 8.dp,
-        color = MaterialTheme.colorScheme.surface
+        color = MaterialTheme.colorScheme.background
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(20.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             OutlinedButton(
                 onClick = onCancel,
                 modifier = Modifier.weight(1f),
                 colors = ButtonDefaults.buttonColors(
-                    contentColor = MaterialTheme.colorScheme.onBackground,
-                    containerColor = MaterialTheme.colorScheme.surfaceContainer
+                    contentColor = MaterialTheme.colorScheme.primary,
+                    containerColor = MaterialTheme.colorScheme.background
                 )
             ) {
                 Text("Cancelar")
@@ -298,7 +297,7 @@ private fun FormSectionCard(
         modifier = Modifier.fillMaxWidth(),
         shape = MaterialTheme.shapes.large,
         colors = CardDefaults.elevatedCardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceBright
+            containerColor = MaterialTheme.colorScheme.surfaceContainer
         ),
         elevation = CardDefaults.elevatedCardElevation(
             defaultElevation = 2.dp

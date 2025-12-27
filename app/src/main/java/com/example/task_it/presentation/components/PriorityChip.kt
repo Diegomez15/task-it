@@ -32,7 +32,7 @@ fun PriorityChip(
         },
         colors = FilterChipDefaults.filterChipColors(
             selectedContainerColor = MaterialTheme.colorScheme.primary,
-            containerColor = MaterialTheme.colorScheme.surfaceBright,
+            containerColor = MaterialTheme.colorScheme.background,
             selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
             labelColor = MaterialTheme.colorScheme.onSurfaceVariant
         )

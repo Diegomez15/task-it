@@ -192,8 +192,8 @@ private fun TaskTopBar(
     var showThemeConfirm by remember { mutableStateOf(false) }
 
     Surface(
-        shadowElevation = 1.dp,
-        color = MaterialTheme.colorScheme.surfaceBright
+
+        color = MaterialTheme.colorScheme.background
     ) {
         Row(
             modifier = Modifier
@@ -329,7 +329,8 @@ private fun EmptyTaskState(
 private fun TaskBottomBar() {
     NavigationBar(
         containerColor = MaterialTheme.colorScheme.surfaceBright,
-        modifier = Modifier.shadow(elevation = 10.dp),
+        modifier = Modifier.shadow(elevation = 10.dp)
+
 
     ) {
         NavigationBarItem(
