@@ -51,7 +51,7 @@ fun TaskFormScreen(
 
     val isEditMode = taskId != null
 
-    val dateFormatter = remember { DateTimeFormatter.ofPattern("MM / dd / yyyy") }
+    val dateFormatter = remember { DateTimeFormatter.ofPattern("dd / MM / yyyy") }
     val timeFormatter = remember { DateTimeFormatter.ofPattern("HH:mm") }
 
     // ✅ Re-crear dialogs cuando cambia el state (para que al editar se abran en la fecha/hora cargada)
