@@ -27,7 +27,11 @@ fun PriorityChip(
                 modifier = Modifier.fillMaxWidth(),
                 contentAlignment = Alignment.Center
             ) {
-                Text(label)
+                Text(
+                    text = label,
+                    maxLines = 1,
+                    softWrap = false
+                )
             }
         },
         colors = FilterChipDefaults.filterChipColors(
