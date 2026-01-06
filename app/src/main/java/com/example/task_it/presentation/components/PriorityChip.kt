@@ -15,27 +15,32 @@ import androidx.compose.ui.unit.dp
 fun PriorityChip(
     label: String,
     selected: Boolean,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit
 ) {
     FilterChip(
+        modifier = modifier,
         selected = selected,
         onClick = onClick,
-        modifier = modifier.height(36.dp),
         label = {
             Box(
                 modifier = Modifier.fillMaxWidth(),
                 contentAlignment = Alignment.Center
             ) {
-                Text(text = label)
+                Text(
+                    text = label,
+                    maxLines = 1,
+                    softWrap = false
+                )
             }
         },
         colors = FilterChipDefaults.filterChipColors(
             selectedContainerColor = MaterialTheme.colorScheme.primary,
             containerColor = MaterialTheme.colorScheme.background,
             selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
-            labelColor = MaterialTheme.colorScheme.onSurfaceVariant
+            labelColor = MaterialTheme.colorScheme.onBackground
         )
     )
 }
+
 

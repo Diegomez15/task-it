@@ -22,7 +22,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -380,45 +379,48 @@ private fun TaskPriorityFilterChips(
     selected: TaskPriority?,
     onSelectedChange: (TaskPriority?) -> Unit
 ) {
-    val scroll = rememberScrollState()
-
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .horizontalScroll(scroll)
-            .padding(horizontal = 12.dp, vertical = 12.dp),
-        horizontalArrangement = Arrangement.spacedBy(5.dp)
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        PriorityChip(
-            label = "Todas",
-            selected = selected == null,
-            onClick = { onSelectedChange(null) },
-            modifier = Modifier.weight(1f)
-        )
         PriorityChip(
             label = "Baja",
             selected = selected == TaskPriority.BAJA,
-            onClick = { onSelectedChange(TaskPriority.BAJA) },
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f),
+            onClick = {
+                onSelectedChange(if (selected == TaskPriority.BAJA) null else TaskPriority.BAJA)
+            }
         )
+
         PriorityChip(
             label = "Media",
             selected = selected == TaskPriority.MEDIA,
-            onClick = { onSelectedChange(TaskPriority.MEDIA) },
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f),
+            onClick = {
+                onSelectedChange(if (selected == TaskPriority.MEDIA) null else TaskPriority.MEDIA)
+            }
         )
+
         PriorityChip(
             label = "Alta",
             selected = selected == TaskPriority.ALTA,
-            onClick = { onSelectedChange(TaskPriority.ALTA) },
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f),
+            onClick = {
+                onSelectedChange(if (selected == TaskPriority.ALTA) null else TaskPriority.ALTA)
+            }
         )
+
         PriorityChip(
             label = "Crítica",
             selected = selected == TaskPriority.CRITICA,
-            onClick = { onSelectedChange(TaskPriority.CRITICA) },
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f),
+            onClick = {
+                onSelectedChange(if (selected == TaskPriority.CRITICA) null else TaskPriority.CRITICA)
+            }
         )
     }
 }
+
 
