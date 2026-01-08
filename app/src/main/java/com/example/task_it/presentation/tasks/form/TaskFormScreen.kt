@@ -15,6 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -214,7 +215,11 @@ fun TaskFormScreen(
                                 containerColor = MaterialTheme.colorScheme.background
                             )
                         ) {
-                            Text(state.date.format(dateFormatter))
+                            Text(
+                                text = state.date.format(dateFormatter),
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                style = MaterialTheme.typography.bodyMedium)
                         }
                     }
 
@@ -234,7 +239,12 @@ fun TaskFormScreen(
                                 containerColor = MaterialTheme.colorScheme.background
                             )
                         ) {
-                            Text(state.time?.format(timeFormatter) ?: "--:--")
+                            Text(
+                                text = state.time?.format(timeFormatter) ?: "--:--",
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                style = MaterialTheme.typography.bodyMedium
+                            )
                         }
                     }
                 }
@@ -293,7 +303,11 @@ private fun TaskFormBottomBar(
                     containerColor = MaterialTheme.colorScheme.background
                 )
             ) {
-                Text("Cancelar")
+                Text(
+                    text = "Cancelar",
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
             }
 
             Button(
@@ -302,7 +316,11 @@ private fun TaskFormBottomBar(
                 modifier = Modifier.weight(1f),
                 enabled = isEnabled
             ) {
-                Text(if (isEditMode) "Guardar cambios" else "Crear tarea")
+                Text(
+                    text = if (isEditMode) "Guardar cambios" else "Crear tarea",
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
             }
         }
     }

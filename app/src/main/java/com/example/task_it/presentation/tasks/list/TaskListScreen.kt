@@ -20,11 +20,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.task_it.domain.model.Task
 import com.example.task_it.domain.model.TaskPriority
@@ -208,7 +209,11 @@ fun TaskListScreen(
                             .height(40.dp)
                             .widthIn(min = 120.dp)
                     ) {
-                        Text("Cancelar")
+                        Text(
+                            text ="Cancelar",
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
                     }
 
                     Spacer(modifier = Modifier.width(12.dp))
@@ -227,7 +232,11 @@ fun TaskListScreen(
                             contentColor = MaterialTheme.colorScheme.onPrimary
                         )
                     ) {
-                        Text("Eliminar")
+                        Text(
+                            text = "Eliminar",
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            )
                     }
                 }
             }
@@ -363,14 +372,14 @@ private fun EmptyTaskState(
             Text(
                 text = "No hay tareas todavía",
                 style = MaterialTheme.typography.titleMedium.copy(
-                    fontSize = 20.sp,
                     fontWeight = FontWeight.SemiBold
                 )
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = "Comienza añadiendo tu primera tarea para organizar tu día",
-                style = MaterialTheme.typography.bodyMedium.copy(color = TextSecondary)
+                style = MaterialTheme.typography.bodyMedium.copy(color = TextSecondary),
+                textAlign = TextAlign.Center
             )
         }
 
