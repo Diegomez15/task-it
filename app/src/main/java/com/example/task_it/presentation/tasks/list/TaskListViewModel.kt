@@ -14,13 +14,18 @@ class TaskListViewModel(application: Application) : AndroidViewModel(application
 
     private val getTasksUseCase = AppModule.provideGetTasksUseCase(application)
     private val deleteTaskUseCase = AppModule.provideDeleteTaskUseCase(application)
+    private val updateTaskUseCase = AppModule.provideUpdateTaskUseCase(application)
 
     val tasks: StateFlow<List<Task>> = getTasksUseCase()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     fun deleteTask(task: Task) {
+        viewModelScope.launch { deleteTaskUseCase(task) }
+    }
+
+    fun toggleTaskCompleted(task: Task) {
         viewModelScope.launch {
-            deleteTaskUseCase(task)
+            updateTaskUseCase(task.copy(isCompleted = !task.isCompleted))
         }
     }
 }

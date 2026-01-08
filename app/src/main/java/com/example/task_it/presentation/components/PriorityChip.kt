@@ -4,6 +4,7 @@ package com.example.task_it.presentation.components
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -21,6 +22,7 @@ fun PriorityChip(
     FilterChip(
         modifier = modifier,
         selected = selected,
+        shape = RoundedCornerShape(8.dp),
         onClick = onClick,
         label = {
             Box(

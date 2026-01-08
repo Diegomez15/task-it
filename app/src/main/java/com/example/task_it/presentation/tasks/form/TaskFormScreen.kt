@@ -142,6 +142,7 @@ fun TaskFormScreen(
                 OutlinedTextField(
                     value = state.title,
                     onValueChange = viewModel::onTitleChange,
+                    shape = RoundedCornerShape(8.dp),
                     label = { Text("Título") },
                     supportingText = {
                         Text("${state.title.length}/${TaskFormLimits.TITLE_MAX}")
@@ -158,6 +159,7 @@ fun TaskFormScreen(
                 OutlinedTextField(
                     value = state.description,
                     onValueChange = viewModel::onDescriptionChange,
+                    shape = RoundedCornerShape(8.dp),
                     label = { Text("Descripción") },
                     supportingText = {
                         Text("${state.description.length}/${TaskFormLimits.DESCRIPTION_MAX}")
@@ -196,7 +198,7 @@ fun TaskFormScreen(
                         Spacer(modifier = Modifier.height(4.dp))
                         OutlinedButton(
                             onClick = { datePickerDialog.show() },
-                            shape = RoundedCornerShape(14.dp),
+                            shape = RoundedCornerShape(8.dp),
                             modifier = Modifier.fillMaxWidth(),
                             colors = ButtonDefaults.buttonColors(
                                 contentColor = MaterialTheme.colorScheme.onBackground,
@@ -216,7 +218,7 @@ fun TaskFormScreen(
                         Spacer(modifier = Modifier.height(4.dp))
                         OutlinedButton(
                             onClick = { timePickerDialog.show() },
-                            shape = RoundedCornerShape(14.dp),
+                            shape = RoundedCornerShape(8.dp),
                             modifier = Modifier.fillMaxWidth(),
                             colors = ButtonDefaults.buttonColors(
                                 contentColor = MaterialTheme.colorScheme.onBackground,
@@ -242,7 +244,8 @@ fun TaskFormScreen(
                         Text("${text.length}/${TaskFormLimits.LOCATION_MAX}")
                     },
                     singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(8.dp)
                 )
             }
 
@@ -270,7 +273,7 @@ private fun TaskFormBottomBar(
         ) {
             OutlinedButton(
                 onClick = onCancel,
-                shape = RoundedCornerShape(14.dp),
+                shape = RoundedCornerShape(8.dp),
                 modifier = Modifier.weight(1f),
                 colors = ButtonDefaults.buttonColors(
                     contentColor = MaterialTheme.colorScheme.primary,
@@ -282,7 +285,7 @@ private fun TaskFormBottomBar(
 
             Button(
                 onClick = onSubmit,
-                shape = RoundedCornerShape(14.dp),
+                shape = RoundedCornerShape(8.dp),
                 modifier = Modifier.weight(1f),
                 enabled = isEnabled
             ) {
@@ -300,12 +303,12 @@ private fun FormSectionCard(
 ) {
     ElevatedCard(
         modifier = Modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.large,
+        shape = RoundedCornerShape(8.dp),
         colors = CardDefaults.elevatedCardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainer
+            containerColor = MaterialTheme.colorScheme.surfaceBright
         ),
         elevation = CardDefaults.elevatedCardElevation(
-            defaultElevation = 2.dp
+            defaultElevation = 1.dp
         )
     ) {
         Column(

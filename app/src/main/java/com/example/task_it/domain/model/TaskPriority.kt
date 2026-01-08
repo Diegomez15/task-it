@@ -1,8 +1,9 @@
 package com.example.task_it.domain.model
 
-enum class TaskPriority {
-    CRITICA,
-    ALTA,
-    MEDIA,
-    BAJA
+enum class TaskPriority(val label: String) {
+    BAJA("Baja"),
+    MEDIA("Media"),
+    ALTA("Alta"),
+    CRITICA("Crítica")
 }
+

@@ -56,10 +56,14 @@ fun TaskListScreen(
     var selectedPriority by rememberSaveable { mutableStateOf<TaskPriority?>(null) } // null = Todas
 
 
-    val filteredTasks = remember(tasks, selectedPriority) {
-        if (selectedPriority == null) tasks
-        else tasks.filter { it.priority == selectedPriority }
+    val tasksFiltered = remember(tasks, selectedPriority) {
+        val base = if (selectedPriority == null) tasks else tasks.filter { it.priority == selectedPriority }
+        base.sortedWith(compareBy<Task> { it.isCompleted }.thenBy { it.date })
     }
+
+    val pendingTasks = tasksFiltered.filter { !it.isCompleted }
+    val completedTasks = tasksFiltered.filter { it.isCompleted }
+
 
     var selectedTask by remember { mutableStateOf<Task?>(null) }
 
@@ -77,7 +81,8 @@ fun TaskListScreen(
             if (tasks.isNotEmpty()) {
                 FloatingActionButton(
                     onClick = onAddTaskClick,
-                    containerColor = YellowPrimary
+                    containerColor = YellowPrimary,
+                    shape = RoundedCornerShape(8.dp),
                 ) {
                     Icon(Icons.Filled.Add, contentDescription = "Añadir tarea")
                 }
@@ -109,7 +114,7 @@ fun TaskListScreen(
                 )
 
 
-                if (filteredTasks.isEmpty()) {
+                if (tasksFiltered.isEmpty()) {
                     // ✅ No hay resultados para el filtro actual
                     Box(
                         modifier = Modifier.fillMaxSize(),
@@ -130,17 +135,38 @@ fun TaskListScreen(
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
 
-                        items(filteredTasks, key = { it.id }) { task ->
-                            TaskItem(
-                                task = task,
-                                onEdit = { onEditTaskClick(task.id) },
-                                onDelete = { taskToDelete = it },
-                                modifier = Modifier
-                                    .animateItemPlacement()
-                                    .padding(horizontal = 12.dp)
-                                    .clickable { selectedTask = task }
-                            )
+                        if (pendingTasks.isNotEmpty()) {
+                            item {
+                                SectionHeader(title = "PENDIENTES", count = pendingTasks.size)
+                            }
+                            items(pendingTasks, key = { it.id }) { task ->
+                                TaskItem(
+                                    task = task,
+                                    onToggleCompleted = { viewModel.toggleTaskCompleted(it) },
+                                    modifier = Modifier
+                                        .animateItemPlacement()
+                                        .padding(horizontal = 12.dp)
+                                        .clickable { selectedTask = task }
+                                )
+                            }
                         }
+
+                        if (completedTasks.isNotEmpty()) {
+                            item {
+                                SectionHeader(title = "COMPLETADAS", count = completedTasks.size)
+                            }
+                            items(completedTasks, key = { it.id }) { task ->
+                                TaskItem(
+                                    task = task,
+                                    onToggleCompleted = { viewModel.toggleTaskCompleted(it) },
+                                    modifier = Modifier
+                                        .animateItemPlacement()
+                                        .padding(horizontal = 12.dp)
+                                        .clickable { selectedTask = task }
+                                )
+                            }
+                        }
+
                     }
                 }
             }
@@ -168,6 +194,7 @@ fun TaskListScreen(
         AlertDialog(
             onDismissRequest = { taskToDelete = null },
             containerColor = MaterialTheme.colorScheme.surfaceBright,
+            shape = RoundedCornerShape(8.dp),
             title = { Text("Eliminar tarea") },
             text = { Text("¿Seguro que quieres eliminar “${taskToDelete!!.title}”?") },
             confirmButton = {
@@ -179,7 +206,7 @@ fun TaskListScreen(
                 ) {
                     OutlinedButton(
                         onClick = { taskToDelete = null },
-                        shape = RoundedCornerShape(14.dp),
+                        shape = RoundedCornerShape(8.dp),
                         modifier = Modifier
                             .height(40.dp)
                             .widthIn(min = 120.dp)
@@ -194,7 +221,7 @@ fun TaskListScreen(
                             viewModel.deleteTask(taskToDelete!!)
                             taskToDelete = null
                         },
-                        shape = RoundedCornerShape(14.dp),
+                        shape = RoundedCornerShape(8.dp),
                         modifier = Modifier
                             .height(40.dp)
                             .widthIn(min = 120.dp),
@@ -210,6 +237,19 @@ fun TaskListScreen(
         )
     }
 }
+
+@Composable
+private fun SectionHeader(title: String, count: Int) {
+    Text(
+        text = "$title ($count)",
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 12.dp, vertical = 6.dp),
+        style = MaterialTheme.typography.labelMedium,
+        color = MaterialTheme.colorScheme.onSurfaceVariant
+    )
+}
+
 
 @Composable
 private fun TaskTopBar(
@@ -268,12 +308,13 @@ private fun TaskTopBar(
         AlertDialog(
             onDismissRequest = { showThemeConfirm = false },
             containerColor = MaterialTheme.colorScheme.surfaceBright,
+            shape = RoundedCornerShape(8.dp),
             title = { Text("Cambiar tema") },
             text = { Text("¿Quieres cambiar a $targetText?") },
             dismissButton = {
                 OutlinedButton(
                     onClick = { showThemeConfirm = false },
-                    shape = RoundedCornerShape(14.dp),
+                    shape = RoundedCornerShape(8.dp),
                     modifier = Modifier
                         .height(40.dp)
                         .widthIn(min = 120.dp)
@@ -285,7 +326,7 @@ private fun TaskTopBar(
                         showThemeConfirm = false
                         onToggleTheme()
                     },
-                    shape = RoundedCornerShape(14.dp),
+                    shape = RoundedCornerShape(8.dp),
                     modifier = Modifier
                         .height(40.dp)
                         .widthIn(min = 120.dp),
@@ -342,7 +383,7 @@ private fun EmptyTaskState(
                 containerColor = YellowPrimary,
                 contentColor = MaterialTheme.colorScheme.onPrimary
             ),
-            shape = RoundedCornerShape(12.dp),
+            shape = RoundedCornerShape(8.dp),
             modifier = Modifier.padding(top = 8.dp)
         ) {
             Icon(imageVector = Icons.Filled.Add, contentDescription = null)

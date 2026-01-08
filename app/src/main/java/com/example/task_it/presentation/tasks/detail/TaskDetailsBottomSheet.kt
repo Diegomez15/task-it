@@ -43,8 +43,8 @@ fun TaskDetailsBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
         containerColor = MaterialTheme.colorScheme.surfaceBright,
-        shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp),
-        dragHandle = { } // sin asa, como en tu captura
+        shape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp),
+        dragHandle = { }
     ) {
         Column(
             modifier = Modifier
@@ -135,7 +135,7 @@ fun TaskDetailsBottomSheet(
                     modifier = Modifier
                         .weight(1f)
                         .height(46.dp),
-                    shape = RoundedCornerShape(14.dp)
+                    shape = RoundedCornerShape(8.dp)
                 ) {
                     Icon(Icons.Filled.Delete, contentDescription = null)
                     Spacer(Modifier.width(8.dp))
@@ -147,7 +147,7 @@ fun TaskDetailsBottomSheet(
                     modifier = Modifier
                         .weight(1f)
                         .height(46.dp),
-                    shape = RoundedCornerShape(14.dp),
+                    shape = RoundedCornerShape(8.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = YellowPrimary,
                         contentColor = MaterialTheme.colorScheme.onPrimary
