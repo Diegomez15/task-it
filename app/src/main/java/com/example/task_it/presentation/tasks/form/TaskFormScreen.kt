@@ -25,6 +25,7 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TaskFormScreen(
     taskId: Long? = null,          // ✅ null = crear, id = editar
@@ -148,7 +149,11 @@ fun TaskFormScreen(
                         Text("${state.title.length}/${TaskFormLimits.TITLE_MAX}")
                     },
                     singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        containerColor = MaterialTheme.colorScheme.background
+                    )
+
                 )
             }
 
@@ -165,7 +170,11 @@ fun TaskFormScreen(
                         Text("${state.description.length}/${TaskFormLimits.DESCRIPTION_MAX}")
                     },
                     maxLines = 3,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        containerColor = MaterialTheme.colorScheme.background,
+                    )
+
                 )
             }
 
@@ -245,7 +254,11 @@ fun TaskFormScreen(
                     },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(8.dp)
+                    shape = RoundedCornerShape(8.dp),
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        containerColor = MaterialTheme.colorScheme.background
+                    )
+
                 )
             }
 

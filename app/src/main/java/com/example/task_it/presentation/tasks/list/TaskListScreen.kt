@@ -1,13 +1,10 @@
 package com.example.task_it.presentation.tasks.list
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -15,7 +12,6 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.LightMode
-import androidx.compose.material.icons.filled.List
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -28,6 +24,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.task_it.domain.model.Task
 import com.example.task_it.domain.model.TaskPriority
@@ -40,7 +37,7 @@ import com.example.task_it.presentation.tasks.detail.TaskDetailsBottomSheet
 
 
 
-@OptIn(ExperimentalFoundationApi::class)
+
 @Composable
 fun TaskListScreen(
     modifier: Modifier = Modifier,
@@ -144,7 +141,7 @@ fun TaskListScreen(
                                     task = task,
                                     onToggleCompleted = { viewModel.toggleTaskCompleted(it) },
                                     modifier = Modifier
-                                        .animateItemPlacement()
+                                        .animateItem()
                                         .padding(horizontal = 12.dp)
                                         .clickable { selectedTask = task }
                                 )
@@ -160,7 +157,7 @@ fun TaskListScreen(
                                     task = task,
                                     onToggleCompleted = { viewModel.toggleTaskCompleted(it) },
                                     modifier = Modifier
-                                        .animateItemPlacement()
+                                        .animateItem()
                                         .padding(horizontal = 12.dp)
                                         .clickable { selectedTask = task }
                                 )
@@ -356,7 +353,7 @@ private fun EmptyTaskState(
             contentAlignment = Alignment.Center
         ) {
             Icon(
-                imageVector = Icons.Filled.List,
+                imageVector = Icons.AutoMirrored.Filled.List,
                 contentDescription = "Sin tareas",
                 tint = TextSecondary
             )
@@ -403,7 +400,7 @@ private fun TaskBottomBar() {
         NavigationBarItem(
             selected = true,
             onClick = { /* Ya estamos en Tareas */ },
-            icon = { Icon(imageVector = Icons.Filled.List, contentDescription = "Tareas") },
+            icon = { Icon(imageVector = Icons.AutoMirrored.Filled.List, contentDescription = "Tareas") },
             label = { Text("Tareas") }
         )
         NavigationBarItem(
