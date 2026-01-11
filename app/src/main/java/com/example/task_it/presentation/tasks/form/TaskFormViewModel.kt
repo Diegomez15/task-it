@@ -8,6 +8,7 @@ import com.example.task_it.domain.model.Task
 import com.example.task_it.domain.model.TaskPriority
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -25,6 +26,25 @@ class TaskFormViewModel(
     private val updateTaskUseCase = AppModule.provideUpdateTaskUseCase(application)
     private val getTaskByIdUseCase = AppModule.provideGetTaskByIdUseCase(application)
 
+    private fun validateDateTime(date: LocalDate?, time: LocalTime?): String? {
+        if (date == null) return "La fecha es obligatoria"
+
+        val now = LocalDateTime.now()
+
+        // Hora opcional:
+        if (time == null) {
+            return if (date.isBefore(now.toLocalDate())) {
+                "No puedes crear una tarea en una fecha pasada"
+            } else null
+        }
+
+        val selected = LocalDateTime.of(date, time)
+        return if (selected.isBefore(now)) {
+            "No puedes crear una tarea en el pasado"
+        } else null
+    }
+
+
     // Guardamos la tarea original para preservar createdAt / isCompleted
     private var loadedTask: Task? = null
 
@@ -34,14 +54,18 @@ class TaskFormViewModel(
                 val task = getTaskByIdUseCase(id) ?: return@launch
                 loadedTask = task
 
+                val err = validateDateTime(task.date, task.time)
+
                 _uiState.value = _uiState.value.copy(
                     title = task.title,
                     description = task.description,
                     priority = task.priority,
                     date = task.date,
                     time = task.time,
-                    location = task.location.orEmpty()
+                    location = task.location.orEmpty(),
+                    dateTimeError = err
                 )
+
             }
         }
     }
@@ -62,13 +86,20 @@ class TaskFormViewModel(
         _uiState.value = _uiState.value.copy(priority = value)
     }
 
-    fun onDateChange(value: LocalDate) {
-        _uiState.value = _uiState.value.copy(date = value)
+    fun onDateChange(date: LocalDate) {
+        _uiState.update {
+            val err = validateDateTime(date, it.time)
+            it.copy(date = date, dateTimeError = err)
+        }
     }
 
-    fun onTimeChange(value: LocalTime?) {
-        _uiState.value = _uiState.value.copy(time = value)
+    fun onTimeChange(time: LocalTime?) {
+        _uiState.update {
+            val err = validateDateTime(it.date, time)
+            it.copy(time = time, dateTimeError = err)
+        }
     }
+
 
     fun onLocationChange(value: String) {
         _uiState.value = _uiState.value.copy(
@@ -92,7 +123,7 @@ class TaskFormViewModel(
             priority = state.priority,
             date = state.date,
             time = state.time,
-            location = state.location.trim().ifBlank { null },
+            location = state.location?.trim()?.ifBlank { null },
             isCompleted = existing?.isCompleted ?: false,
             createdAt = existing?.createdAt ?: LocalDateTime.now()
         )
@@ -102,4 +133,6 @@ class TaskFormViewModel(
             else updateTaskUseCase(task)
         }
     }
+
+
 }

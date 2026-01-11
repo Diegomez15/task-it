@@ -10,5 +10,6 @@ data class TaskFormUiState(
     val priority: TaskPriority = TaskPriority.MEDIA,
     val date: LocalDate = LocalDate.now(),
     val time: LocalTime? = null,
-    val location: String = ""
+    val location: String? = "",
+    val dateTimeError: String? = null
 )

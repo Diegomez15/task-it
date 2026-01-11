@@ -56,6 +56,10 @@ fun TaskFormScreen(
     val dateFormatter = remember { DateTimeFormatter.ofPattern("dd / MM / yyyy") }
     val timeFormatter = remember { DateTimeFormatter.ofPattern("HH:mm") }
 
+    val dateTimeError = state.dateTimeError
+
+
+
     // ✅ Re-crear dialogs cuando cambia el state (para que al editar se abran en la fecha/hora cargada)
     val datePickerDialog = remember(state.date) {
         DatePickerDialog(
@@ -82,7 +86,11 @@ fun TaskFormScreen(
     }
 
     // ✅ Obligatorios: título + descripción (ubicación y hora opcionales)
-    val isSubmitEnabled = state.title.trim().isNotEmpty()
+    val isSubmitEnabled =
+        state.title.trim().isNotEmpty() &&
+                state.description.trim().isNotEmpty() &&
+                state.dateTimeError == null
+
 
     Scaffold(
         modifier = Modifier.imePadding(),
@@ -248,6 +256,14 @@ fun TaskFormScreen(
                         }
                     }
                 }
+                if (dateTimeError != null) {
+                    Text(
+                        text = dateTimeError,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
+
             }
 
             Spacer(modifier = Modifier.height(12.dp))
