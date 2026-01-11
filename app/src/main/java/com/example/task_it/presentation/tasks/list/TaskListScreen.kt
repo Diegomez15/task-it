@@ -198,25 +198,22 @@ fun TaskListScreen(
             confirmButton = {
                 Row(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
-                    horizontalArrangement = Arrangement.Center
+                        .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     OutlinedButton(
                         onClick = { taskToDelete = null },
                         shape = RoundedCornerShape(8.dp),
                         modifier = Modifier
+                            .weight(1f)
                             .height(40.dp)
-                            .widthIn(min = 120.dp)
                     ) {
                         Text(
-                            text ="Cancelar",
+                            text = "Cancelar",
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
                         )
                     }
-
-                    Spacer(modifier = Modifier.width(12.dp))
 
                     Button(
                         onClick = {
@@ -225,8 +222,8 @@ fun TaskListScreen(
                         },
                         shape = RoundedCornerShape(8.dp),
                         modifier = Modifier
-                            .height(40.dp)
-                            .widthIn(min = 120.dp),
+                            .weight(1f)
+                            .height(40.dp),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = YellowPrimary,
                             contentColor = MaterialTheme.colorScheme.onPrimary
@@ -235,10 +232,11 @@ fun TaskListScreen(
                         Text(
                             text = "Eliminar",
                             maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            )
+                            overflow = TextOverflow.Ellipsis
+                        )
                     }
                 }
+
             }
         )
     }
@@ -317,31 +315,49 @@ private fun TaskTopBar(
             shape = RoundedCornerShape(8.dp),
             title = { Text("Cambiar tema") },
             text = { Text("¿Quieres cambiar a $targetText?") },
-            dismissButton = {
-                OutlinedButton(
-                    onClick = { showThemeConfirm = false },
-                    shape = RoundedCornerShape(8.dp),
-                    modifier = Modifier
-                        .height(40.dp)
-                        .widthIn(min = 120.dp)
-                ) { Text("Cancelar") }
-            },
             confirmButton = {
-                Button(
-                    onClick = {
-                        showThemeConfirm = false
-                        onToggleTheme()
-                    },
-                    shape = RoundedCornerShape(8.dp),
+                Row(
                     modifier = Modifier
-                        .height(40.dp)
-                        .widthIn(min = 120.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = YellowPrimary,
-                        contentColor = MaterialTheme.colorScheme.onPrimary
-                    )
-                ) { Text("Cambiar") }
+                        .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    OutlinedButton(
+                        onClick = { showThemeConfirm = false },
+                        shape = RoundedCornerShape(8.dp),
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(40.dp)
+                    ) {
+                        Text(
+                            text = "Cancelar",
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+
+                    Button(
+                        onClick = {
+                            onToggleTheme()
+                            showThemeConfirm = false
+                        },
+                        shape = RoundedCornerShape(8.dp),
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(40.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = YellowPrimary,
+                            contentColor = MaterialTheme.colorScheme.onPrimary
+                        )
+                    ) {
+                        Text(
+                            text = "Cambiar",
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                }
             }
+
         )
     }
 }
