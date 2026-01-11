@@ -2,6 +2,7 @@ package com.example.task_it.presentation.tasks.detail
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
@@ -14,12 +15,14 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import java.time.format.DateTimeFormatter
 import com.example.task_it.domain.model.Task
 import com.example.task_it.domain.model.TaskPriority
 import com.example.task_it.presentation.theme.YellowPrimary
+import com.example.task_it.presentation.theme.color
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -38,6 +41,8 @@ fun TaskDetailsBottomSheet(
     val timeText = remember(task.time) {
         task.time?.format(DateTimeFormatter.ofPattern("HH:mm"))
     }
+
+    val priorityColor = task.priority.color()
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -63,10 +68,8 @@ fun TaskDetailsBottomSheet(
                     Box(
                         modifier = Modifier
                             .size(10.dp)
-                            .background(
-                                color = priorityColor(task.priority),
-                                shape = RoundedCornerShape(50)
-                            )
+                            .clip(CircleShape)
+                            .background(priorityColor)
                     )
                     Spacer(Modifier.width(8.dp))
                     Text(
@@ -197,10 +200,3 @@ private fun TaskDetailRow(
     }
 }
 
-@Composable
-private fun priorityColor(priority: TaskPriority) = when (priority) {
-    TaskPriority.CRITICA -> MaterialTheme.colorScheme.error
-    TaskPriority.ALTA -> YellowPrimary
-    TaskPriority.MEDIA -> MaterialTheme.colorScheme.tertiary
-    TaskPriority.BAJA -> MaterialTheme.colorScheme.primary
-}

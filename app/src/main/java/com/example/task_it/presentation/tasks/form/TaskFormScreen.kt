@@ -383,27 +383,30 @@ private fun PriorityRow(
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         PriorityChip(
-            label = "Crítica",
-            selected = selected == TaskPriority.CRITICA,
-            onClick = { onPrioritySelected(TaskPriority.CRITICA) },
+            label = "Baja",
+            selected = selected == TaskPriority.BAJA,
+            onClick = { onPrioritySelected(TaskPriority.BAJA) },
             modifier = Modifier.weight(1f)
         )
-        PriorityChip(
-            label = "Alta",
-            selected = selected == TaskPriority.ALTA,
-            onClick = { onPrioritySelected(TaskPriority.ALTA) },
-            modifier = Modifier.weight(1f)
-        )
+
         PriorityChip(
             label = "Media",
             selected = selected == TaskPriority.MEDIA,
             onClick = { onPrioritySelected(TaskPriority.MEDIA) },
             modifier = Modifier.weight(1f)
         )
+
         PriorityChip(
-            label = "Baja",
-            selected = selected == TaskPriority.BAJA,
-            onClick = { onPrioritySelected(TaskPriority.BAJA) },
+            label = "Alta",
+            selected = selected == TaskPriority.ALTA,
+            onClick = { onPrioritySelected(TaskPriority.ALTA) },
+            modifier = Modifier.weight(1f)
+        )
+
+        PriorityChip(
+            label = "Crítica",
+            selected = selected == TaskPriority.CRITICA,
+            onClick = { onPrioritySelected(TaskPriority.CRITICA) },
             modifier = Modifier.weight(1f)
         )
     }

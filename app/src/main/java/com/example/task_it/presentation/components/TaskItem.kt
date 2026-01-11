@@ -22,6 +22,8 @@ import com.example.task_it.domain.model.Task
 import com.example.task_it.presentation.theme.YellowPrimary
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+import com.example.task_it.presentation.theme.color
+
 
 @Composable
 fun TaskItem(
@@ -52,14 +54,17 @@ fun TaskItem(
         ) {
             val stripeAlpha = if (task.isCompleted) 0.45f else 1f
 
+            val stripeColor = task.priority.color()
+
             Box(
                 modifier = Modifier
                     .width(6.dp)
                     .fillMaxHeight()
                     .clip(RoundedCornerShape(99.dp))
-                    .alpha(stripeAlpha)              // ✅ se atenúa al completar
-                    .background(YellowPrimary)
+                    .alpha(stripeAlpha) // se atenúa al completar
+                    .background(stripeColor)
             )
+
 
             Spacer(modifier = Modifier.width(12.dp))
 
