@@ -35,6 +35,8 @@ import com.example.task_it.presentation.theme.TextSecondary
 import com.example.task_it.presentation.theme.YellowPrimary
 import com.example.task_it.presentation.tasks.detail.TaskDetailsBottomSheet
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Search
 import kotlinx.coroutines.flow.distinctUntilChanged
 
 
@@ -57,11 +59,24 @@ fun TaskListScreen(
     var taskToDelete by remember { mutableStateOf<Task?>(null) }
     var selectedPriority by rememberSaveable { mutableStateOf<TaskPriority?>(null) } // null = Todas
 
+    var isSearching by rememberSaveable { mutableStateOf(false) }
+    var searchQuery by rememberSaveable { mutableStateOf("") }
 
-    val tasksFiltered = remember(tasks, selectedPriority) {
-        val base = if (selectedPriority == null) tasks else tasks.filter { it.priority == selectedPriority }
-        base.sortedWith(compareBy<Task> { it.isCompleted }.thenBy { it.date })
+
+    val tasksFiltered = remember(tasks, selectedPriority, searchQuery) {
+        val byPriority =
+            if (selectedPriority == null) tasks
+            else tasks.filter { it.priority == selectedPriority }
+
+        val query = searchQuery.trim()
+
+        val byTitle =
+            if (query.isBlank()) byPriority
+            else byPriority.filter { it.title.contains(query, ignoreCase = true) }
+
+        byTitle.sortedWith(compareBy<Task> { it.isCompleted }.thenBy { it.date })
     }
+
 
     val pendingTasks = tasksFiltered.filter { !it.isCompleted }
     val completedTasks = tasksFiltered.filter { it.isCompleted }
@@ -83,7 +98,6 @@ fun TaskListScreen(
 
 
 
-
     Scaffold(
         topBar = {
             TaskTopBar(
@@ -99,7 +113,7 @@ fun TaskListScreen(
                     onToggle = { fabExpanded = !fabExpanded },
                     onSearchClick = {
                         fabExpanded = false
-                        // TODO: aquí activaremos el modo búsqueda por título
+                        isSearching = true
                     },
                     onCreateClick = {
                         fabExpanded = false
@@ -133,8 +147,41 @@ fun TaskListScreen(
                     onSelectedChange = {
                         selectedPriority = it
                         fabExpanded = false
-                    },
+                    }
+                )
+
+                if (isSearching) {
+                    OutlinedTextField(
+                        value = searchQuery,
+                        onValueChange = { searchQuery = it },
+                        singleLine = true,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 12.dp)
+                            .padding(bottom = 12.dp),
+                        shape = RoundedCornerShape(8.dp),
+                        label = { Text("Buscar por título") },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Filled.Search,
+                                contentDescription = "Buscar"
+                            )
+                        },
+                        trailingIcon = {
+                            IconButton(
+                                onClick = {
+                                    searchQuery = ""
+                                    isSearching = false
+                                }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.Close,
+                                    contentDescription = "Cerrar búsqueda"
+                                )
+                            }
+                        }
                     )
+                }
 
 
                 if (tasksFiltered.isEmpty()) {
@@ -473,11 +520,12 @@ private fun TaskBottomBar() {
 private fun TaskPriorityFilterChips(
     selected: TaskPriority?,
     onSelectedChange: (TaskPriority?) -> Unit
+
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 12.dp),
+            .padding(horizontal = 16.dp, vertical = 0.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         PriorityChip(

@@ -88,7 +88,6 @@ fun TaskFormScreen(
     // ✅ Obligatorios: título + descripción (ubicación y hora opcionales)
     val isSubmitEnabled =
         state.title.trim().isNotEmpty() &&
-                state.description.trim().isNotEmpty() &&
                 state.dateTimeError == null
 
 
