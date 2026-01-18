@@ -34,6 +34,10 @@ import com.example.task_it.presentation.components.TaskItem
 import com.example.task_it.presentation.theme.TextSecondary
 import com.example.task_it.presentation.theme.YellowPrimary
 import com.example.task_it.presentation.tasks.detail.TaskDetailsBottomSheet
+import androidx.compose.foundation.lazy.rememberLazyListState
+import kotlinx.coroutines.flow.distinctUntilChanged
+
+
 
 
 
@@ -65,6 +69,20 @@ fun TaskListScreen(
 
     var selectedTask by remember { mutableStateOf<Task?>(null) }
 
+    var fabExpanded by rememberSaveable { mutableStateOf(false) }
+
+    val listState = rememberLazyListState()
+
+    LaunchedEffect(listState) {
+        snapshotFlow { listState.isScrollInProgress }
+            .distinctUntilChanged()
+            .collect { isScrolling ->
+                if (isScrolling) fabExpanded = false
+            }
+    }
+
+
+
 
     Scaffold(
         topBar = {
@@ -75,15 +93,19 @@ fun TaskListScreen(
         },
         bottomBar = { TaskBottomBar() },
         floatingActionButton = {
-            // ✅ FAB solo si hay tareas (y si quieres, también solo si hay tareas filtradas)
             if (tasks.isNotEmpty()) {
-                FloatingActionButton(
-                    onClick = onAddTaskClick,
-                    containerColor = YellowPrimary,
-                    shape = RoundedCornerShape(8.dp),
-                ) {
-                    Icon(Icons.Filled.Add, contentDescription = "Añadir tarea")
-                }
+                ExpandableTaskFab(
+                    expanded = fabExpanded,
+                    onToggle = { fabExpanded = !fabExpanded },
+                    onSearchClick = {
+                        fabExpanded = false
+                        // TODO: aquí activaremos el modo búsqueda por título
+                    },
+                    onCreateClick = {
+                        fabExpanded = false
+                        onAddTaskClick()
+                    }
+                )
             }
         },
         containerColor = MaterialTheme.colorScheme.background
@@ -108,8 +130,11 @@ fun TaskListScreen(
                 // ✅ Chips siempre visibles cuando hay tareas
                 TaskPriorityFilterChips(
                     selected = selectedPriority,
-                    onSelectedChange = { selectedPriority = it },
-                )
+                    onSelectedChange = {
+                        selectedPriority = it
+                        fabExpanded = false
+                    },
+                    )
 
 
                 if (tasksFiltered.isEmpty()) {
@@ -126,10 +151,9 @@ fun TaskListScreen(
                     }
                 } else {
                     LazyColumn(
+                        state = listState,
                         modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(
-                            bottom = 12.dp // ✅ deja aire para la bottom bar + FAB
-                        ),
+                        contentPadding = PaddingValues(bottom = 12.dp),
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
 
@@ -144,7 +168,11 @@ fun TaskListScreen(
                                     modifier = Modifier
                                         .animateItem()
                                         .padding(horizontal = 12.dp)
-                                        .clickable { selectedTask = task }
+                                        .clickable {
+                                            fabExpanded = false
+                                            selectedTask = task
+                                        }
+
                                 )
                             }
                         }
@@ -160,7 +188,11 @@ fun TaskListScreen(
                                     modifier = Modifier
                                         .animateItem()
                                         .padding(horizontal = 12.dp)
-                                        .clickable { selectedTask = task }
+                                        .clickable {
+                                            fabExpanded = false
+                                            selectedTask = task
+                                        }
+
                                 )
                             }
                         }
