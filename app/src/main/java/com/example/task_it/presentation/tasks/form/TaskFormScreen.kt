@@ -87,17 +87,23 @@ fun TaskFormScreen(
 
 
     Scaffold(
-        modifier = Modifier.imePadding(),
+        modifier = Modifier,
         bottomBar = {
-            TaskFormBottomBar(
-                isEnabled = state.isSubmitEnabled,
-                isEditMode = isEditMode,
-                onCancel = onCancel,
-                onSubmit = {
-                    viewModel.submitTask()
-                    onCreateTask()
-                }
-            )
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .navigationBarsPadding() // ✅ evita que lo tape la barra 3-botones
+            ) {
+                TaskFormBottomBar(
+                    isEnabled = state.isSubmitEnabled,
+                    isEditMode = isEditMode,
+                    onCancel = onCancel,
+                    onSubmit = {
+                        viewModel.submitTask()
+                        onCreateTask()
+                    }
+                )
+            }
         }
     ) { innerPadding ->
 
@@ -227,7 +233,7 @@ fun TaskFormScreen(
 
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = "Hora",
+                            text = "Hora (opcional)",
                             style = MaterialTheme.typography.bodyMedium,
                             fontWeight = FontWeight.SemiBold
                         )
@@ -307,7 +313,9 @@ private fun TaskFormBottomBar(
             OutlinedButton(
                 onClick = onCancel,
                 shape = RoundedCornerShape(8.dp),
-                modifier = Modifier.weight(1f),
+                modifier = Modifier
+                    .weight(1f)
+                    .height(40.dp),
                 colors = ButtonDefaults.buttonColors(
                     contentColor = MaterialTheme.colorScheme.primary,
                     containerColor = MaterialTheme.colorScheme.background
@@ -323,7 +331,9 @@ private fun TaskFormBottomBar(
             Button(
                 onClick = onSubmit,
                 shape = RoundedCornerShape(8.dp),
-                modifier = Modifier.weight(1f),
+                modifier = Modifier
+                    .weight(1f)
+                    .height(40.dp),
                 enabled = isEnabled
             ) {
                 Text(
