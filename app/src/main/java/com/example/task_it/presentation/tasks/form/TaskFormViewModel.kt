@@ -26,22 +26,41 @@ class TaskFormViewModel(
     private val updateTaskUseCase = AppModule.provideUpdateTaskUseCase(application)
     private val getTaskByIdUseCase = AppModule.provideGetTaskByIdUseCase(application)
 
-    private fun validateDateTime(date: LocalDate?, time: LocalTime?): String? {
-        if (date == null) return "La fecha es obligatoria"
-
+    private fun validateDateTime(
+        date: LocalDate,
+        time: LocalTime?,
+        originalDate: LocalDate?,
+        originalTime: LocalTime?
+    ): String? {
         val now = LocalDateTime.now()
 
-        // Hora opcional:
+        // ✅ MODO EDICIÓN: si el usuario NO ha cambiado fecha/hora,
+        // permitimos que la tarea siga estando en el pasado.
+        if (originalDate != null) {
+            val sameDate = date == originalDate
+            val sameTime = time == originalTime // contempla null == null
+            if (sameDate && sameTime) return null
+        }
+
+        // A partir de aquí, aplicamos regla estricta (crear o editar cambiando fecha/hora)
         if (time == null) {
             return if (date.isBefore(now.toLocalDate())) {
-                "No puedes crear una tarea en una fecha pasada"
+                "No puedes seleccionar una fecha pasada"
             } else null
         }
 
         val selected = LocalDateTime.of(date, time)
         return if (selected.isBefore(now)) {
-            "No puedes crear una tarea en el pasado"
+            "No puedes seleccionar una fecha y hora pasadas"
         } else null
+    }
+
+
+    private fun isFormValid(state: TaskFormUiState): Boolean {
+        if (state.title.isBlank()) return false
+        if (state.dateTimeError != null) return false
+        if (state.date == null) return false
+        return true
     }
 
 
@@ -54,7 +73,13 @@ class TaskFormViewModel(
                 val task = getTaskByIdUseCase(id) ?: return@launch
                 loadedTask = task
 
-                val err = validateDateTime(task.date, task.time)
+                val err = validateDateTime(
+                    date = task.date,
+                    time = task.time,
+                    originalDate = task.date,
+                    originalTime = task.time
+                )
+
 
                 _uiState.value = _uiState.value.copy(
                     title = task.title,
@@ -63,7 +88,15 @@ class TaskFormViewModel(
                     date = task.date,
                     time = task.time,
                     location = task.location.orEmpty(),
-                    dateTimeError = err
+                    dateTimeError = err,
+                    isSubmitEnabled = isFormValid(
+                        _uiState.value.copy(
+                            title = task.title,
+                            date = task.date,
+                            time = task.time,
+                            dateTimeError = err
+                        )
+                    )
                 )
 
             }
@@ -71,15 +104,25 @@ class TaskFormViewModel(
     }
 
     fun onTitleChange(value: String) {
-        _uiState.value = _uiState.value.copy(
-            title = value.take(TaskFormLimits.TITLE_MAX)
-        )
+        _uiState.update { state ->
+            val updatedState = state.copy(
+                title = value.take(TaskFormLimits.TITLE_MAX)
+            )
+            updatedState.copy(
+                isSubmitEnabled = isFormValid(updatedState)
+            )
+        }
     }
 
     fun onDescriptionChange(value: String) {
-        _uiState.value = _uiState.value.copy(
-            description = value.take(TaskFormLimits.DESCRIPTION_MAX)
-        )
+        _uiState.update { state ->
+            val updatedState = state.copy(
+                description = value.take(TaskFormLimits.DESCRIPTION_MAX)
+            )
+            updatedState.copy(
+                isSubmitEnabled = isFormValid(updatedState)
+            )
+        }
     }
 
     fun onPriorityChange(value: TaskPriority) {
@@ -87,16 +130,45 @@ class TaskFormViewModel(
     }
 
     fun onDateChange(date: LocalDate) {
-        _uiState.update {
-            val err = validateDateTime(date, it.time)
-            it.copy(date = date, dateTimeError = err)
+        _uiState.update { state ->
+            val err = validateDateTime(
+                date = date,
+                time = state.time,
+                originalDate = loadedTask?.date,
+                originalTime = loadedTask?.time
+            )
+
+
+            val updatedState = state.copy(
+                date = date,
+                dateTimeError = err
+            )
+
+            updatedState.copy(
+                isSubmitEnabled = isFormValid(updatedState)
+            )
         }
     }
 
+
     fun onTimeChange(time: LocalTime?) {
-        _uiState.update {
-            val err = validateDateTime(it.date, time)
-            it.copy(time = time, dateTimeError = err)
+        _uiState.update { state ->
+            val err = validateDateTime(
+                date = state.date,
+                time = time,
+                originalDate = loadedTask?.date,
+                originalTime = loadedTask?.time
+            )
+
+
+            val updatedState = state.copy(
+                time = time,
+                dateTimeError = err
+            )
+
+            updatedState.copy(
+                isSubmitEnabled = isFormValid(updatedState)
+            )
         }
     }
 
@@ -114,7 +186,9 @@ class TaskFormViewModel(
      */
     fun submitTask() {
         val state = _uiState.value
+        if (!state.isSubmitEnabled) return
         val existing = loadedTask
+
 
         val task = Task(
             id = existing?.id ?: 0L,

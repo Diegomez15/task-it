@@ -11,5 +11,6 @@ data class TaskFormUiState(
     val date: LocalDate = LocalDate.now(),
     val time: LocalTime? = null,
     val location: String? = "",
-    val dateTimeError: String? = null
+    val dateTimeError: String? = null,
+    val isSubmitEnabled: Boolean = false
 )

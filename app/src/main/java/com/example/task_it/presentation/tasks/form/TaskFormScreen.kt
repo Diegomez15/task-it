@@ -85,17 +85,12 @@ fun TaskFormScreen(
         )
     }
 
-    // ✅ Obligatorios: título + descripción (ubicación y hora opcionales)
-    val isSubmitEnabled =
-        state.title.trim().isNotEmpty() &&
-                state.dateTimeError == null
-
 
     Scaffold(
         modifier = Modifier.imePadding(),
         bottomBar = {
             TaskFormBottomBar(
-                isEnabled = isSubmitEnabled,
+                isEnabled = state.isSubmitEnabled,
                 isEditMode = isEditMode,
                 onCancel = onCancel,
                 onSubmit = {
