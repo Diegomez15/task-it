@@ -16,13 +16,16 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import java.time.format.DateTimeFormatter
 import com.example.task_it.domain.model.Task
-import com.example.task_it.domain.model.TaskPriority
 import com.example.task_it.presentation.theme.YellowPrimary
 import com.example.task_it.presentation.theme.color
+import com.example.task_it.presentation.utils.isOverdue
+
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -43,6 +46,8 @@ fun TaskDetailsBottomSheet(
     }
 
     val priorityColor = task.priority.color()
+    val isOverdue = task.isOverdue()
+
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -106,8 +111,16 @@ fun TaskDetailsBottomSheet(
             TaskDetailRow(
                 icon = Icons.Filled.CalendarToday,
                 label = "Fecha",
-                value = dateText
+                value = buildString {
+                    append(dateText)
+                    if (isOverdue) append(" (atrasada)")
+                },
+                valueColor = if (isOverdue)
+                    MaterialTheme.colorScheme.error
+                else
+                    MaterialTheme.colorScheme.onSurface
             )
+
 
             if (timeText != null) {
                 TaskDetailRow(
@@ -171,7 +184,8 @@ fun TaskDetailsBottomSheet(
 private fun TaskDetailRow(
     icon: androidx.compose.ui.graphics.vector.ImageVector,
     label: String,
-    value: String
+    value: String,
+    valueColor: Color = MaterialTheme.colorScheme.onSurface
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -194,7 +208,8 @@ private fun TaskDetailRow(
             Text(
                 text = value,
                 style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.SemiBold
+                fontWeight = FontWeight.SemiBold,
+                color = valueColor
             )
         }
     }

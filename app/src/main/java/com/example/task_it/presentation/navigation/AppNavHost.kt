@@ -6,6 +6,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.task_it.presentation.calendar.CalendarScreen
 import com.example.task_it.presentation.tasks.form.TaskFormScreen
 import com.example.task_it.presentation.tasks.list.TaskListScreen
 
@@ -27,8 +28,18 @@ fun AppNavHost(
                 onEditTaskClick = { taskId ->
                     navController.navigate(NavRoutes.taskFormRoute(taskId))
                 },
+                onCalendarClick = { navController.navigate(NavRoutes.CALENDAR) },
                 isDarkTheme = isDarkTheme,
                 onToggleTheme = onToggleTheme
+            )
+        }
+
+        composable(NavRoutes.CALENDAR) {
+            CalendarScreen(
+                isDarkTheme = isDarkTheme,
+                onToggleTheme = onToggleTheme,
+                onTasksClick = { navController.navigate(NavRoutes.TASK_LIST) },
+                onTaskClick = { taskId -> navController.navigate(NavRoutes.taskFormRoute(taskId)) }
             )
         }
 

@@ -23,6 +23,8 @@ import com.example.task_it.presentation.theme.YellowPrimary
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 import com.example.task_it.presentation.theme.color
+import com.example.task_it.presentation.utils.isOverdue
+
 
 
 @Composable
@@ -36,6 +38,8 @@ fun TaskItem(
     val timeFormatter = DateTimeFormatter.ofPattern("HH:mm")
 
     val contentAlpha = if (task.isCompleted) 0.45f else 1f
+    val isOverdue = task.isOverdue()
+
 
     ElevatedCard(
         modifier = modifier.fillMaxWidth(),
@@ -118,10 +122,30 @@ fun TaskItem(
                 }
 
                 // Fecha
-                MetaRow(
-                    icon = { Icon(Icons.Filled.Today, contentDescription = null) },
-                    text = task.date.format(dateFormatter)
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Today,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+
+                    Text(
+                        text = buildString {
+                            append(task.date.format(dateFormatter))
+                            if (isOverdue) append(" (atrasada)")
+                        },
+                        style = MaterialTheme.typography.bodySmall,
+                        color = if (isOverdue)
+                            MaterialTheme.colorScheme.error
+                        else
+                            MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+
+
 
                 // Hora (opcional)
                 task.time?.let {

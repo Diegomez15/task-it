@@ -38,6 +38,10 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import kotlinx.coroutines.flow.distinctUntilChanged
+import com.example.task_it.presentation.components.TaskTopBar
+import com.example.task_it.presentation.components.TaskBottomBar
+import com.example.task_it.presentation.components.BottomTab
+
 
 
 
@@ -51,7 +55,8 @@ fun TaskListScreen(
     onAddTaskClick: () -> Unit = {},
     onEditTaskClick: (Long) -> Unit,
     isDarkTheme: Boolean,
-    onToggleTheme: () -> Unit
+    onToggleTheme: () -> Unit,
+    onCalendarClick: () -> Unit
 ) {
     val viewModel: TaskListViewModel = viewModel()
     val tasks by viewModel.tasks.collectAsState()
@@ -96,8 +101,6 @@ fun TaskListScreen(
             }
     }
 
-
-
     Scaffold(
         topBar = {
             TaskTopBar(
@@ -105,7 +108,13 @@ fun TaskListScreen(
                 onToggleTheme = onToggleTheme
             )
         },
-        bottomBar = { TaskBottomBar() },
+        bottomBar = {
+            TaskBottomBar(
+                selectedTab = BottomTab.TASKS,
+                onTasksClick = { /* ya estás */ },
+                onCalendarClick = onCalendarClick
+            )
+        },
         floatingActionButton = {
             if (tasks.isNotEmpty()) {
                 ExpandableTaskFab(
@@ -122,6 +131,7 @@ fun TaskListScreen(
                 )
             }
         },
+
         containerColor = MaterialTheme.colorScheme.background
     ) { innerPadding ->
 
@@ -333,114 +343,6 @@ private fun SectionHeader(title: String, count: Int) {
     )
 }
 
-
-@Composable
-private fun TaskTopBar(
-    isDarkTheme: Boolean,
-    onToggleTheme: () -> Unit
-) {
-    var showThemeConfirm by remember { mutableStateOf(false) }
-
-    Surface(
-
-        color = MaterialTheme.colorScheme.background
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .windowInsetsPadding(WindowInsets.statusBars)
-                .padding(horizontal = 12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(
-                    modifier = Modifier
-                        .size(32.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(YellowPrimary),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.Description,
-                        contentDescription = "Logo Task-it",
-                        tint = MaterialTheme.colorScheme.onPrimary
-                    )
-                }
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = "Task-it",
-                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold)
-                )
-            }
-
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                IconButton(onClick = { showThemeConfirm = true }) {
-                    Icon(
-                        imageVector = Icons.Filled.LightMode,
-                        contentDescription = "Cambiar tema"
-                    )
-                }
-            }
-        }
-    }
-
-    if (showThemeConfirm) {
-        val targetText = if (isDarkTheme) "modo claro" else "modo oscuro"
-
-        AlertDialog(
-            onDismissRequest = { showThemeConfirm = false },
-            containerColor = MaterialTheme.colorScheme.surfaceBright,
-            shape = RoundedCornerShape(8.dp),
-            title = { Text("Cambiar tema") },
-            text = { Text("¿Quieres cambiar a $targetText?") },
-            confirmButton = {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    OutlinedButton(
-                        onClick = { showThemeConfirm = false },
-                        shape = RoundedCornerShape(8.dp),
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(40.dp)
-                    ) {
-                        Text(
-                            text = "Cancelar",
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                    }
-
-                    Button(
-                        onClick = {
-                            onToggleTheme()
-                            showThemeConfirm = false
-                        },
-                        shape = RoundedCornerShape(8.dp),
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(40.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = YellowPrimary,
-                            contentColor = MaterialTheme.colorScheme.onPrimary
-                        )
-                    ) {
-                        Text(
-                            text = "Cambiar",
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                    }
-                }
-            }
-
-        )
-    }
-}
-
 @Composable
 private fun EmptyTaskState(
     onAddTaskClick: () -> Unit
@@ -494,27 +396,6 @@ private fun EmptyTaskState(
     }
 }
 
-@Composable
-private fun TaskBottomBar() {
-    NavigationBar(
-        containerColor = MaterialTheme.colorScheme.background,
-
-
-    ) {
-        NavigationBarItem(
-            selected = true,
-            onClick = { /* Ya estamos en Tareas */ },
-            icon = { Icon(imageVector = Icons.AutoMirrored.Filled.List, contentDescription = "Tareas") },
-            label = { Text("Tareas") }
-        )
-        NavigationBarItem(
-            selected = false,
-            onClick = { /* TODO: ir a Calendario */ },
-            icon = { Icon(imageVector = Icons.Filled.CalendarToday, contentDescription = "Calendario") },
-            label = { Text("Calendario") }
-        )
-    }
-}
 
 @Composable
 private fun TaskPriorityFilterChips(
