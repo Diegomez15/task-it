@@ -5,10 +5,10 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.filled.Schedule
-import androidx.compose.material.icons.filled.Today
+import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material.icons.outlined.RadioButtonUnchecked
+import androidx.compose.material.icons.outlined.Schedule
+import androidx.compose.material.icons.outlined.Today
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -127,7 +127,7 @@ fun TaskItem(
                     horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Filled.Today,
+                        imageVector = Icons.Outlined.Today,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -150,7 +150,7 @@ fun TaskItem(
                 // Hora (opcional)
                 task.time?.let {
                     MetaRow(
-                        icon = { Icon(Icons.Filled.Schedule, contentDescription = null) },
+                        icon = { Icon(Icons.Outlined.Schedule, contentDescription = null) },
                         text = it.format(timeFormatter)
                     )
                 }
@@ -158,7 +158,7 @@ fun TaskItem(
                 // Ubicación (opcional)
                 task.location?.takeIf { it.isNotBlank() }?.let {
                     MetaRow(
-                        icon = { Icon(Icons.Filled.LocationOn, contentDescription = null) },
+                        icon = { Icon(Icons.Outlined.LocationOn, contentDescription = null) },
                         text = it
                     )
                 }
