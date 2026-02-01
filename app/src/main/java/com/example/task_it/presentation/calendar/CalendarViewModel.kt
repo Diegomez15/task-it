@@ -29,17 +29,16 @@ class CalendarViewModel(application: Application) : AndroidViewModel(application
 
     init {
         viewModelScope.launch {
-            combine(
-                tasksFlow,
-                _state.map { it.currentMonth }.distinctUntilChanged(),
-                _state.map { it.selectedDate }.distinctUntilChanged()
-            ) { tasks, month, selected ->
+            val monthFlow = _state.map { it.currentMonth }.distinctUntilChanged()
+            val selectedFlow = _state.map { it.selectedDate }.distinctUntilChanged()
+
+            combine(tasksFlow, monthFlow, selectedFlow) { tasks, month, selected ->
 
                 val monthStart = month.atDay(1)
                 val monthEnd = month.atEndOfMonth()
 
                 // ✅ markers del mes (1 punto por prioridad presente)
-                val markers = tasks
+                val markers: Map<LocalDate, List<TaskPriority>> = tasks
                     .asSequence()
                     .filter { it.date in monthStart..monthEnd }
                     .groupBy { it.date }
@@ -51,15 +50,19 @@ class CalendarViewModel(application: Application) : AndroidViewModel(application
                     }
 
                 // ✅ tareas del día seleccionado
-                val daily = tasks
+                val daily: List<Task> = tasks
                     .filter { it.date == selected }
                     .sortedBy { it.time ?: LocalTime.MAX }
 
-                _state.value.copy(
-                    dayMarkers = markers,
-                    tasksForSelectedDate = daily
-                )
-            }.collect()
+                markers to daily
+            }.collect { (markers, daily) ->
+                _state.update {
+                    it.copy(
+                        dayMarkers = markers,
+                        tasksForSelectedDate = daily
+                    )
+                }
+            }
         }
     }
 
@@ -74,4 +77,11 @@ class CalendarViewModel(application: Application) : AndroidViewModel(application
     fun onNextMonth() {
         _state.update { it.copy(currentMonth = it.currentMonth.plusMonths(1)) }
     }
+
+    private val deleteTaskUseCase = AppModule.provideDeleteTaskUseCase(application)
+
+    fun deleteTask(task: Task) {
+        viewModelScope.launch { deleteTaskUseCase(task) }
+    }
+
 }

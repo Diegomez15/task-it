@@ -129,7 +129,8 @@ fun TaskItem(
                     Icon(
                         imageVector = Icons.Outlined.Today,
                         contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(20.dp)
                     )
 
                     Text(
@@ -150,7 +151,13 @@ fun TaskItem(
                 // Hora (opcional)
                 task.time?.let {
                     MetaRow(
-                        icon = { Icon(Icons.Outlined.Schedule, contentDescription = null,tint = MaterialTheme.colorScheme.onSurfaceVariant) },
+                        icon = {
+                            Icon(Icons.Outlined.Schedule,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.size(20.dp)
+                            )
+                               },
                         text = it.format(timeFormatter)
                     )
                 }
@@ -158,7 +165,13 @@ fun TaskItem(
                 // Ubicación (opcional)
                 task.location?.takeIf { it.isNotBlank() }?.let {
                     MetaRow(
-                        icon = { Icon(Icons.Outlined.LocationOn, contentDescription = null,tint = MaterialTheme.colorScheme.onSurfaceVariant) },
+                        icon = {
+                            Icon(Icons.Outlined.LocationOn,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        },
                         text = it
                     )
                 }

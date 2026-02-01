@@ -6,11 +6,11 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.filled.AccessTime
-import androidx.compose.material.icons.filled.CalendarToday
+import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.LocationOn
+import androidx.compose.material.icons.outlined.Schedule
+import androidx.compose.material.icons.outlined.Today
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -109,7 +109,7 @@ fun TaskDetailsBottomSheet(
 
             // Datos
             TaskDetailRow(
-                icon = Icons.Filled.CalendarToday,
+                icon = Icons.Outlined.Today,
                 label = "Fecha",
                 value = buildString {
                     append(dateText)
@@ -124,7 +124,7 @@ fun TaskDetailsBottomSheet(
 
             if (timeText != null) {
                 TaskDetailRow(
-                    icon = Icons.Filled.AccessTime,
+                    icon = Icons.Outlined.Schedule,
                     label = "Hora",
                     value = timeText
                 )
@@ -133,7 +133,7 @@ fun TaskDetailsBottomSheet(
             val location = task.location?.takeIf { it.isNotBlank() }
             if (location != null) {
                 TaskDetailRow(
-                    icon = Icons.Filled.LocationOn,
+                    icon = Icons.Outlined.LocationOn,
                     label = "Ubicación",
                     value = location
                 )
@@ -153,7 +153,7 @@ fun TaskDetailsBottomSheet(
                         .height(46.dp),
                     shape = RoundedCornerShape(8.dp)
                 ) {
-                    Icon(Icons.Filled.Delete, contentDescription = null)
+                    Icon(Icons.Outlined.Delete, contentDescription = null)
                     Spacer(Modifier.width(8.dp))
                     Text("Borrar")
                 }
@@ -169,7 +169,7 @@ fun TaskDetailsBottomSheet(
                         contentColor = MaterialTheme.colorScheme.onPrimary
                     )
                 ) {
-                    Icon(Icons.Filled.Edit, contentDescription = null)
+                    Icon(Icons.Outlined.Edit, contentDescription = null)
                     Spacer(Modifier.width(8.dp))
                     Text("Editar")
                 }

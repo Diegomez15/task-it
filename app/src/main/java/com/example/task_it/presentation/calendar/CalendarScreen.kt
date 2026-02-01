@@ -9,7 +9,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material.icons.outlined.RadioButtonUnchecked
+import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -34,16 +36,25 @@ import java.time.LocalTime
 import java.time.YearMonth
 import java.time.format.TextStyle
 import java.util.Locale
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import com.example.task_it.presentation.tasks.detail.TaskDetailsBottomSheet
+import com.example.task_it.presentation.theme.YellowPrimary
+
 
 @Composable
 fun CalendarScreen(
     isDarkTheme: Boolean,
     onToggleTheme: () -> Unit,
     onTasksClick: () -> Unit,
+    onEditTaskClick: (Long) -> Unit,
     onTaskClick: (Long) -> Unit
 ) {
     val viewModel: CalendarViewModel = viewModel()
     val state by viewModel.state.collectAsState()
+    var selectedTask by remember { mutableStateOf<Task?>(null) }
+    var taskToDelete by remember { mutableStateOf<Task?>(null) }
+
 
     Scaffold(
         topBar = {
@@ -106,13 +117,80 @@ fun CalendarScreen(
                     items(state.tasksForSelectedDate) { task ->
                         CalendarTaskRow(
                             task = task,
-                            onClick = { onTaskClick(task.id) }
+                            onClick = { selectedTask = task }
                         )
                     }
                 }
             }
         }
     }
+    selectedTask?.let { task ->
+        TaskDetailsBottomSheet(
+            task = task,
+            onDismiss = { selectedTask = null },
+            onDelete = {
+                selectedTask = null
+                taskToDelete = task // ✅ usa tu dialog de confirmación actual
+            },
+            onEdit = {
+                selectedTask = null
+                onEditTaskClick(task.id) // ✅ navega al form con id
+            }
+        )
+    }
+    if (taskToDelete != null) {
+        AlertDialog(
+            onDismissRequest = { taskToDelete = null },
+            containerColor = MaterialTheme.colorScheme.surfaceBright,
+            shape = RoundedCornerShape(8.dp),
+            title = { Text("Eliminar tarea") },
+            text = { Text("¿Seguro que quieres eliminar “${taskToDelete!!.title}”?") },
+            confirmButton = {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    OutlinedButton(
+                        onClick = { taskToDelete = null },
+                        shape = RoundedCornerShape(8.dp),
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(40.dp)
+                    ) {
+                        Text(
+                            text = "Cancelar",
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+
+                    Button(
+                        onClick = {
+                            viewModel.deleteTask(taskToDelete!!)
+                            taskToDelete = null
+                        },
+                        shape = RoundedCornerShape(8.dp),
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(40.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = YellowPrimary,
+                            contentColor = MaterialTheme.colorScheme.onPrimary
+                        )
+                    ) {
+                        Text(
+                            text = "Eliminar",
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                }
+
+            }
+        )
+    }
+
 }
 
 @Composable
@@ -258,7 +336,7 @@ private fun DayCell(
             .clip(shape)
             .background(containerColor)
             .clickable(enabled = date != null, onClick = onClick)
-            .padding(vertical = 8.dp),
+            .padding(vertical = 1.dp),
         contentAlignment = Alignment.Center
     ) {
         if (date != null) {
@@ -400,24 +478,47 @@ private fun CalendarTaskRow(
                 ) {
                     val timeText = task.time?.let { formatTime(it) }
                     if (timeText != null) {
-                        Text(
-                            text = "🕒 $timeText",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            maxLines = 1
-                        )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Outlined.Schedule,
+                                contentDescription = null,
+                                modifier = Modifier.size(16.dp),
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Text(
+                                text = timeText,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                maxLines = 1
+                            )
+                        }
                     }
 
                     val loc = task.location?.takeIf { it.isNotBlank() }
                     if (loc != null) {
-                        Text(
-                            text = "📍 $loc",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Outlined.LocationOn,
+                                contentDescription = null,
+                                modifier = Modifier.size(16.dp),
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Text(
+                                text = loc,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
                     }
+
                 }
             }
 
