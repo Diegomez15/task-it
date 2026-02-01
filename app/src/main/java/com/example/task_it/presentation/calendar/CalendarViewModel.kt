@@ -26,6 +26,9 @@ class CalendarViewModel(application: Application) : AndroidViewModel(application
 
     private val _state = MutableStateFlow(CalendarUiState())
     val state: StateFlow<CalendarUiState> = _state.asStateFlow()
+    private val deleteTaskUseCase = AppModule.provideDeleteTaskUseCase(application)
+    private val updateTaskUseCase = AppModule.provideUpdateTaskUseCase(application)
+
 
     init {
         viewModelScope.launch {
@@ -78,10 +81,14 @@ class CalendarViewModel(application: Application) : AndroidViewModel(application
         _state.update { it.copy(currentMonth = it.currentMonth.plusMonths(1)) }
     }
 
-    private val deleteTaskUseCase = AppModule.provideDeleteTaskUseCase(application)
-
     fun deleteTask(task: Task) {
         viewModelScope.launch { deleteTaskUseCase(task) }
+    }
+
+    fun toggleCompleted(task: Task) {
+        viewModelScope.launch {
+            updateTaskUseCase(task.copy(isCompleted = !task.isCompleted))
+        }
     }
 
 }

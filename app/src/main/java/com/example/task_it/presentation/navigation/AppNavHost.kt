@@ -39,7 +39,6 @@ fun AppNavHost(
                 isDarkTheme = isDarkTheme,
                 onToggleTheme = onToggleTheme,
                 onTasksClick = { navController.navigate(NavRoutes.TASK_LIST) },
-                onTaskClick = { taskId -> navController.navigate(NavRoutes.taskFormRoute(taskId)) },
                 onEditTaskClick = { taskId ->
                     navController.navigate(NavRoutes.taskFormRoute(taskId))
                 }

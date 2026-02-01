@@ -150,7 +150,7 @@ fun TaskDetailsBottomSheet(
                     onClick = onDelete,
                     modifier = Modifier
                         .weight(1f)
-                        .height(46.dp),
+                        .height(40.dp),
                     shape = RoundedCornerShape(8.dp)
                 ) {
                     Icon(Icons.Outlined.Delete, contentDescription = null)
@@ -162,7 +162,7 @@ fun TaskDetailsBottomSheet(
                     onClick = onEdit,
                     modifier = Modifier
                         .weight(1f)
-                        .height(46.dp),
+                        .height(40.dp),
                     shape = RoundedCornerShape(8.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = YellowPrimary,

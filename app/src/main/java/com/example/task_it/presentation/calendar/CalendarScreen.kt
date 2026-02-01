@@ -40,6 +40,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.example.task_it.presentation.tasks.detail.TaskDetailsBottomSheet
 import com.example.task_it.presentation.theme.YellowPrimary
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.foundation.layout.IntrinsicSize
+
+
+
 
 
 @Composable
@@ -47,13 +54,20 @@ fun CalendarScreen(
     isDarkTheme: Boolean,
     onToggleTheme: () -> Unit,
     onTasksClick: () -> Unit,
-    onEditTaskClick: (Long) -> Unit,
-    onTaskClick: (Long) -> Unit
+    onEditTaskClick: (Long) -> Unit
 ) {
     val viewModel: CalendarViewModel = viewModel()
     val state by viewModel.state.collectAsState()
     var selectedTask by remember { mutableStateOf<Task?>(null) }
     var taskToDelete by remember { mutableStateOf<Task?>(null) }
+    val pendingTasks = remember(state.tasksForSelectedDate) {
+        state.tasksForSelectedDate.filter { !it.isCompleted }
+    }
+
+    val completedTasks = remember(state.tasksForSelectedDate) {
+        state.tasksForSelectedDate.filter { it.isCompleted }
+    }
+
 
 
     Scaffold(
@@ -92,8 +106,12 @@ fun CalendarScreen(
                 month = state.currentMonth,
                 selectedDate = state.selectedDate,
                 markers = state.dayMarkers,
-                onSelect = viewModel::onSelectDate
+                onSelect = viewModel::onSelectDate,
+                onPrevMonth = viewModel::onPrevMonth,
+                onNextMonth = viewModel::onNextMonth
             )
+
+
 
             Spacer(Modifier.height(16.dp))
 
@@ -114,14 +132,37 @@ fun CalendarScreen(
                     contentPadding = PaddingValues(bottom = 16.dp),
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    items(state.tasksForSelectedDate) { task ->
-                        CalendarTaskRow(
-                            task = task,
-                            onClick = { selectedTask = task }
-                        )
+
+                    if (pendingTasks.isNotEmpty()) {
+                        item {
+                            SectionHeader(title = "PENDIENTES", count = pendingTasks.size)
+                        }
+                        items(pendingTasks, key = { it.id }) { task ->
+                            CalendarTaskRow(
+                                task = task,
+                                onClick = { selectedTask = task },
+                                onToggleCompleted = { viewModel.toggleCompleted(it) },
+                                modifier = Modifier.animateItem()
+                            )
+                        }
+                    }
+
+                    if (completedTasks.isNotEmpty()) {
+                        item {
+                            SectionHeader(title = "COMPLETADAS", count = completedTasks.size)
+                        }
+                        items(completedTasks, key = { it.id }) { task ->
+                            CalendarTaskRow(
+                                task = task,
+                                onClick = { selectedTask = task },
+                                onToggleCompleted = { viewModel.toggleCompleted(it) },
+                                modifier = Modifier.animateItem()
+                            )
+                        }
                     }
                 }
             }
+
         }
     }
     selectedTask?.let { task ->
@@ -194,6 +235,19 @@ fun CalendarScreen(
 }
 
 @Composable
+private fun SectionHeader(title: String, count: Int) {
+    Text(
+        text = "$title ($count)",
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 6.dp),
+        style = MaterialTheme.typography.labelMedium,
+        color = MaterialTheme.colorScheme.onSurfaceVariant
+    )
+}
+
+
+@Composable
 private fun MonthHeader(
     month: YearMonth,
     onPrev: () -> Unit,
@@ -228,8 +282,11 @@ private fun CalendarCard(
     month: YearMonth,
     selectedDate: LocalDate,
     markers: Map<LocalDate, List<TaskPriority>>,
-    onSelect: (LocalDate) -> Unit
-) {
+    onSelect: (LocalDate) -> Unit,
+    onPrevMonth: () -> Unit,
+    onNextMonth: () -> Unit
+)
+{
 
     ElevatedCard(
         modifier = Modifier.fillMaxWidth(),
@@ -247,18 +304,27 @@ private fun CalendarCard(
                 month = month,
                 selectedDate = selectedDate,
                 markers = markers,
-                onSelect = onSelect
+                onSelect = onSelect,
+                onPrevMonth = onPrevMonth,
+                onNextMonth = onNextMonth
             )
         }
     }
 }
+
+private data class CalendarCell(
+    val date: LocalDate,
+    val inCurrentMonth: Boolean
+)
 
 @Composable
 private fun CalendarMonthGrid(
     month: YearMonth,
     selectedDate: LocalDate,
     markers: Map<LocalDate, List<TaskPriority>>,
-    onSelect: (LocalDate) -> Unit
+    onSelect: (LocalDate) -> Unit,
+    onPrevMonth: () -> Unit,
+    onNextMonth: () -> Unit
 ) {
     val firstDayOfMonth = month.atDay(1)
     val daysInMonth = month.lengthOfMonth()
@@ -266,19 +332,44 @@ private fun CalendarMonthGrid(
     // Lunes como primer día (L=0 ... D=6)
     val firstDowIndex = ((firstDayOfMonth.dayOfWeek.value + 6) % 7)
 
-    val days = buildList<LocalDate?> {
-        repeat(firstDowIndex) { add(null) }
-        for (d in 1..daysInMonth) add(month.atDay(d))
+    val prevMonth = month.minusMonths(1)
+    val nextMonth = month.plusMonths(1)
+    val prevMonthDays = prevMonth.lengthOfMonth()
+
+    // Calculamos cuántas filas necesitamos (de 4 a 6 normalmente)
+    val totalCells = firstDowIndex + daysInMonth
+    val rows = (totalCells + 6) / 7
+    val totalGridCells = rows * 7
+
+    val cells = buildList {
+        // Días del mes anterior (relleno al inicio)
+        val startPrevDay = prevMonthDays - firstDowIndex + 1
+        for (d in startPrevDay..prevMonthDays) {
+            add(CalendarCell(prevMonth.atDay(d), inCurrentMonth = false))
+        }
+
+        // Días del mes actual
+        for (d in 1..daysInMonth) {
+            add(CalendarCell(month.atDay(d), inCurrentMonth = true))
+        }
+
+        // Días del mes siguiente (relleno al final)
+        val remaining = totalGridCells - size
+        for (d in 1..remaining) {
+            add(CalendarCell(nextMonth.atDay(d), inCurrentMonth = false))
+        }
     }
 
-    // ✅ IMPORTANTE: misma distribución que las filas del mes
+    // Header de días semana
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         listOf("L", "M", "X", "J", "V", "S", "D").forEach { label ->
             Box(
-                modifier = Modifier.weight(1f).padding(vertical = 10.dp),
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(vertical = 10.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
@@ -293,32 +384,39 @@ private fun CalendarMonthGrid(
 
     Spacer(Modifier.height(10.dp))
 
-    val rows = (days.size + 6) / 7
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        for (r in 0 until rows) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                for (c in 0..6) {
-                    val i = r * 7 + c
-                    val date = days.getOrNull(i)
-                    DayCell(
-                        date = date,
-                        selected = date == selectedDate,
-                        markers = date?.let { markers[it].orEmpty() }.orEmpty(),
-                        onClick = { if (date != null) onSelect(date) },
-                        modifier = Modifier.weight(1f)
-                    )
-                }
+    for (r in 0 until rows) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            for (c in 0..6) {
+                val i = r * 7 + c
+                val cell = cells[i]
+
+                DayCell(
+                    date = cell.date,
+                    inCurrentMonth = cell.inCurrentMonth,
+                    selected = cell.date == selectedDate,
+                    markers = markers[cell.date].orEmpty(),
+                    onClick = {
+                        // Si pulsas un día fuera del mes, cambia de mes automáticamente
+                        if (!cell.inCurrentMonth) {
+                            if (cell.date.isBefore(firstDayOfMonth)) onPrevMonth() else onNextMonth()
+                        }
+                        onSelect(cell.date)
+                    },
+                    modifier = Modifier.weight(1f)
+                )
             }
         }
     }
 }
 
+
 @Composable
 private fun DayCell(
-    date: LocalDate?,
+    date: LocalDate,
+    inCurrentMonth: Boolean,
     selected: Boolean,
     markers: List<TaskPriority>,
     onClick: () -> Unit,
@@ -330,53 +428,55 @@ private fun DayCell(
         if (selected) MaterialTheme.colorScheme.primary.copy(alpha = 0.18f)
         else MaterialTheme.colorScheme.surfaceBright
 
+    val contentAlpha = if (inCurrentMonth) 1f else 0.35f
+
     Box(
         modifier = modifier
             .aspectRatio(1f)
             .clip(shape)
             .background(containerColor)
-            .clickable(enabled = date != null, onClick = onClick)
+            .clickable(onClick = onClick)
             .padding(vertical = 1.dp),
         contentAlignment = Alignment.Center
     ) {
-        if (date != null) {
-            // ✅ número centrado como en tu referencia
-            Text(
-                text = date.dayOfMonth.toString(),
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
-                textAlign = TextAlign.Center
+        Text(
+            text = date.dayOfMonth.toString(),
+            modifier = Modifier.alpha(contentAlpha),
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
+            textAlign = TextAlign.Center
+        )
+
+        // Puntitos (si quieres que fuera de mes no salgan, lo dejamos como está)
+        Row(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 6.dp)
+                .alpha(contentAlpha),
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            val order = listOf(
+                TaskPriority.BAJA,
+                TaskPriority.MEDIA,
+                TaskPriority.ALTA,
+                TaskPriority.CRITICA
             )
 
-            // ✅ Puntitos de prioridad (tus colores)
-            Row(
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .padding(bottom = 6.dp),
-                horizontalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                val order = listOf(
-                    TaskPriority.BAJA,
-                    TaskPriority.MEDIA,
-                    TaskPriority.ALTA,
-                    TaskPriority.CRITICA
-                )
-
-                order
-                    .filter { it in markers }
-                    .take(4)
-                    .forEach { p ->
-                        Box(
-                            modifier = Modifier
-                                .size(6.dp)
-                                .clip(RoundedCornerShape(50))
-                                .background(p.color())
-                        )
-                    }
-            }
+            order
+                .filter { it in markers }
+                .take(4)
+                .forEach { p ->
+                    Box(
+                        modifier = Modifier
+                            .size(6.dp)
+                            .clip(RoundedCornerShape(50))
+                            .background(p.color())
+                    )
+                }
         }
     }
 }
+
 
 @Composable
 private fun TasksSectionHeader(selectedDate: LocalDate, taskCount: Int) {
@@ -430,12 +530,16 @@ private fun EmptyDayCard(isToday: Boolean) {
 @Composable
 private fun CalendarTaskRow(
     task: Task,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    onToggleCompleted: (Task) -> Unit,
+    modifier: Modifier = Modifier
 ) {
+    val contentAlpha = if (task.isCompleted) 0.45f else 1f
+    val stripeAlpha = if (task.isCompleted) 0.45f else 1f
     val barColor = task.priority.color()
 
     ElevatedCard(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(8.dp),
@@ -447,29 +551,36 @@ private fun CalendarTaskRow(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
+                .height(IntrinsicSize.Min) // ✅ barra se adapta al alto real
                 .padding(vertical = 12.dp, horizontal = 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Barrita izquierda
+            // Barra decorativa izquierda (con alpha si completada)
             Box(
                 modifier = Modifier
                     .width(4.dp)
-                    .height(44.dp)
+                    .fillMaxHeight()
                     .clip(RoundedCornerShape(8.dp))
+                    .alpha(stripeAlpha)
                     .background(barColor)
             )
 
             Spacer(Modifier.width(12.dp))
 
             Column(
-                modifier = Modifier.weight(1f),
+                modifier = Modifier
+                    .weight(1f)
+                    .alpha(contentAlpha),
                 verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 Text(
                     text = task.title,
                     fontWeight = FontWeight.SemiBold,
                     maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
+                    overflow = TextOverflow.Ellipsis,
+                    style = MaterialTheme.typography.titleSmall.copy(
+                        textDecoration = if (task.isCompleted) TextDecoration.LineThrough else null
+                    )
                 )
 
                 Row(
@@ -518,19 +629,32 @@ private fun CalendarTaskRow(
                             )
                         }
                     }
-
                 }
             }
 
-            // “checkbox” a la derecha (visual)
-            Icon(
-                imageVector = Icons.Outlined.RadioButtonUnchecked,
-                contentDescription = "Completar",
-                tint = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            IconButton(
+                onClick = { onToggleCompleted(task) },
+                modifier = Modifier.size(36.dp)
+            ) {
+                Icon(
+                    imageVector = if (task.isCompleted)
+                        Icons.Filled.CheckCircle
+                    else
+                        Icons.Outlined.RadioButtonUnchecked,
+                    contentDescription = if (task.isCompleted)
+                        "Marcar como pendiente"
+                    else
+                        "Marcar como completada",
+                    tint = if (task.isCompleted)
+                        YellowPrimary
+                    else
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
         }
     }
 }
+
 
 private fun formatTime(time: LocalTime): String =
     "%02d:%02d".format(time.hour, time.minute)
