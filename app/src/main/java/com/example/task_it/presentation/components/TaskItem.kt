@@ -150,7 +150,7 @@ fun TaskItem(
                 // Hora (opcional)
                 task.time?.let {
                     MetaRow(
-                        icon = { Icon(Icons.Outlined.Schedule, contentDescription = null) },
+                        icon = { Icon(Icons.Outlined.Schedule, contentDescription = null,tint = MaterialTheme.colorScheme.onSurfaceVariant) },
                         text = it.format(timeFormatter)
                     )
                 }
@@ -158,7 +158,7 @@ fun TaskItem(
                 // Ubicación (opcional)
                 task.location?.takeIf { it.isNotBlank() }?.let {
                     MetaRow(
-                        icon = { Icon(Icons.Outlined.LocationOn, contentDescription = null) },
+                        icon = { Icon(Icons.Outlined.LocationOn, contentDescription = null,tint = MaterialTheme.colorScheme.onSurfaceVariant) },
                         text = it
                     )
                 }

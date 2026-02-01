@@ -4,18 +4,13 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.ChevronRight
-import androidx.compose.material3.AssistChip
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
+import androidx.compose.material.icons.outlined.RadioButtonUnchecked
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -25,7 +20,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.task_it.domain.model.Task
 import com.example.task_it.domain.model.TaskPriority
 import com.example.task_it.presentation.components.BottomTab
@@ -33,11 +30,10 @@ import com.example.task_it.presentation.components.TaskBottomBar
 import com.example.task_it.presentation.components.TaskTopBar
 import com.example.task_it.presentation.theme.color
 import java.time.LocalDate
+import java.time.LocalTime
 import java.time.YearMonth
 import java.time.format.TextStyle
 import java.util.Locale
-import androidx.lifecycle.viewmodel.compose.viewModel
-
 
 @Composable
 fun CalendarScreen(
@@ -62,15 +58,14 @@ fun CalendarScreen(
                 onTasksClick = onTasksClick,
                 onCalendarClick = { /* ya estás */ }
             )
-        },
-
+        }
     ) { padding ->
 
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(horizontal = 16.dp)
+                .padding(horizontal = 12.dp)
         ) {
             Spacer(Modifier.height(12.dp))
 
@@ -82,7 +77,7 @@ fun CalendarScreen(
 
             Spacer(Modifier.height(12.dp))
 
-            CalendarMonthGrid(
+            CalendarCard(
                 month = state.currentMonth,
                 selectedDate = state.selectedDate,
                 markers = state.dayMarkers,
@@ -98,17 +93,22 @@ fun CalendarScreen(
 
             Spacer(Modifier.height(10.dp))
 
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(bottom = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                items(state.tasksForSelectedDate.size) { i ->
-                    val task = state.tasksForSelectedDate[i]
-                    CalendarTaskRow(
-                        task = task,
-                        onClick = { onTaskClick(task.id) }
-                    )
+            if (state.tasksForSelectedDate.isEmpty()) {
+                EmptyDayCard(
+                    isToday = state.selectedDate == LocalDate.now()
+                )
+            } else {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(bottom = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    items(state.tasksForSelectedDate) { task ->
+                        CalendarTaskRow(
+                            task = task,
+                            onClick = { onTaskClick(task.id) }
+                        )
+                    }
                 }
             }
         }
@@ -146,6 +146,36 @@ private fun MonthHeader(
 }
 
 @Composable
+private fun CalendarCard(
+    month: YearMonth,
+    selectedDate: LocalDate,
+    markers: Map<LocalDate, List<TaskPriority>>,
+    onSelect: (LocalDate) -> Unit
+) {
+
+    ElevatedCard(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(8.dp),
+        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 1.dp),
+        colors = CardDefaults.elevatedCardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceBright
+        )
+    ) {
+        Column(
+            modifier = Modifier
+                .padding(12.dp)
+        ) {
+            CalendarMonthGrid(
+                month = month,
+                selectedDate = selectedDate,
+                markers = markers,
+                onSelect = onSelect
+            )
+        }
+    }
+}
+
+@Composable
 private fun CalendarMonthGrid(
     month: YearMonth,
     selectedDate: LocalDate,
@@ -163,18 +193,27 @@ private fun CalendarMonthGrid(
         for (d in 1..daysInMonth) add(month.atDay(d))
     }
 
-    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-        listOf("L", "M", "X", "J", "V", "S", "D").forEach {
-            Text(
-                text = it,
-                style = MaterialTheme.typography.labelMedium,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.weight(1f)
-            )
+    // ✅ IMPORTANTE: misma distribución que las filas del mes
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        listOf("L", "M", "X", "J", "V", "S", "D").forEach { label ->
+            Box(
+                modifier = Modifier.weight(1f).padding(vertical = 10.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = label,
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.SemiBold,
+                    textAlign = TextAlign.Center
+                )
+            }
         }
     }
 
-    Spacer(Modifier.height(8.dp))
+    Spacer(Modifier.height(10.dp))
 
     val rows = (days.size + 6) / 7
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -207,11 +246,11 @@ private fun DayCell(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val shape = RoundedCornerShape(12.dp)
+    val shape = RoundedCornerShape(8.dp)
 
     val containerColor =
-        if (selected) MaterialTheme.colorScheme.primary.copy(alpha = 0.16f)
-        else MaterialTheme.colorScheme.surface
+        if (selected) MaterialTheme.colorScheme.primary.copy(alpha = 0.18f)
+        else MaterialTheme.colorScheme.surfaceBright
 
     Box(
         modifier = modifier
@@ -219,20 +258,23 @@ private fun DayCell(
             .clip(shape)
             .background(containerColor)
             .clickable(enabled = date != null, onClick = onClick)
-            .padding(8.dp)
+            .padding(vertical = 8.dp),
+        contentAlignment = Alignment.Center
     ) {
         if (date != null) {
+            // ✅ número centrado como en tu referencia
             Text(
                 text = date.dayOfMonth.toString(),
                 style = MaterialTheme.typography.bodyMedium,
-                fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal
+                fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
+                textAlign = TextAlign.Center
             )
 
-            // ✅ Puntitos: uno por prioridad presente ese día, usando TUS colores
+            // ✅ Puntitos de prioridad (tus colores)
             Row(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
-                    .padding(bottom = 2.dp),
+                    .padding(bottom = 6.dp),
                 horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 val order = listOf(
@@ -250,7 +292,7 @@ private fun DayCell(
                             modifier = Modifier
                                 .size(6.dp)
                                 .clip(RoundedCornerShape(50))
-                                .background(p.color()) // 👈 aquí usa tu extensión
+                                .background(p.color())
                         )
                     }
             }
@@ -265,8 +307,14 @@ private fun TasksSectionHeader(selectedDate: LocalDate, taskCount: Int) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         val monthName = selectedDate.month.getDisplayName(TextStyle.FULL, Locale("es", "ES"))
+        val title = if (selectedDate == LocalDate.now()) {
+            "Tareas de hoy"
+        } else {
+            "Tareas del ${selectedDate.dayOfMonth} de $monthName"
+        }
+
         Text(
-            text = "Tareas del ${selectedDate.dayOfMonth} de $monthName",
+            text = title,
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.SemiBold,
             modifier = Modifier.weight(1f)
@@ -281,25 +329,107 @@ private fun TasksSectionHeader(selectedDate: LocalDate, taskCount: Int) {
 }
 
 @Composable
+private fun EmptyDayCard(isToday: Boolean) {
+    ElevatedCard(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 4.dp),
+        shape = RoundedCornerShape(8.dp),
+        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 1.dp),
+        colors = CardDefaults.elevatedCardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceBright
+        )
+    ) {
+        Text(
+            text = if (isToday) "No hay tareas programadas para este día" else "No hay tareas programadas para este día",
+            modifier = Modifier.padding(14.dp),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+}
+
+@Composable
 private fun CalendarTaskRow(
     task: Task,
     onClick: () -> Unit
 ) {
+    val barColor = task.priority.color()
+
     ElevatedCard(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick),
-        shape = RoundedCornerShape(14.dp),
-        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 6.dp)
+        shape = RoundedCornerShape(8.dp),
+        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 1.dp),
+        colors = CardDefaults.elevatedCardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceBright
+        )
     ) {
-        Column(Modifier.padding(14.dp)) {
-            Text(task.title, fontWeight = FontWeight.SemiBold)
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 12.dp, horizontal = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Barrita izquierda
+            Box(
+                modifier = Modifier
+                    .width(4.dp)
+                    .height(44.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(barColor)
+            )
 
-            // Esto es “placeholder” por si aún no quieres reutilizar tu TaskItem aquí
-            // (lo normal es que lo sustituyas por tu item compacto con tu estilo)
-            Spacer(Modifier.height(6.dp))
-            val timeText = task.time?.toString() ?: "--:--"
-            Text("Hora: $timeText", style = MaterialTheme.typography.bodySmall)
+            Spacer(Modifier.width(12.dp))
+
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                Text(
+                    text = task.title,
+                    fontWeight = FontWeight.SemiBold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    val timeText = task.time?.let { formatTime(it) }
+                    if (timeText != null) {
+                        Text(
+                            text = "🕒 $timeText",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 1
+                        )
+                    }
+
+                    val loc = task.location?.takeIf { it.isNotBlank() }
+                    if (loc != null) {
+                        Text(
+                            text = "📍 $loc",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                }
+            }
+
+            // “checkbox” a la derecha (visual)
+            Icon(
+                imageVector = Icons.Outlined.RadioButtonUnchecked,
+                contentDescription = "Completar",
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
     }
 }
+
+private fun formatTime(time: LocalTime): String =
+    "%02d:%02d".format(time.hour, time.minute)
