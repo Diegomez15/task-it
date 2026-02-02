@@ -29,13 +29,13 @@ import java.time.format.DateTimeFormatter
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TaskFormScreen(
-    taskId: Long? = null,          // ✅ null = crear, id = editar
+    taskId: Long? = null,
     onCancel: () -> Unit,
-    onCreateTask: () -> Unit        // (lo mantengo para no romper tu navegación: al guardar, haces popBackStack)
+    onCreateTask: () -> Unit
 ) {
     val context = LocalContext.current
 
-    // ✅ ViewModel con Application + taskId
+    //ViewModel con Application + taskId
     val viewModel: TaskFormViewModel = viewModel(
         factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
@@ -60,7 +60,7 @@ fun TaskFormScreen(
 
 
 
-    // ✅ Re-crear dialogs cuando cambia el state (para que al editar se abran en la fecha/hora cargada)
+
     val datePickerDialog = remember(state.date) {
         DatePickerDialog(
             context,
@@ -92,7 +92,7 @@ fun TaskFormScreen(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .navigationBarsPadding() // ✅ evita que lo tape la barra 3-botones
+                    .navigationBarsPadding() // evita que lo tape la barra 3-botones
             ) {
                 TaskFormBottomBar(
                     isEnabled = state.isSubmitEnabled,
@@ -288,7 +288,6 @@ fun TaskFormScreen(
                 )
             }
 
-            // Aire al final para que no quede pegado a la bottomBar
             Spacer(modifier = Modifier.height(24.dp))
         }
     }
@@ -346,7 +345,7 @@ private fun TaskFormBottomBar(
     }
 }
 
-// Card contenedora de cada bloque, similar a tu diseño original
+// Card contenedora de cada bloque
 @Composable
 private fun FormSectionCard(
     title: String,

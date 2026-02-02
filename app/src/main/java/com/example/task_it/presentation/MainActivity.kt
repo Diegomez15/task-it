@@ -46,7 +46,7 @@ class MainActivity : ComponentActivity() {
             // Tema del sistema (solo se usa si pref == null)
             val systemDark = androidx.compose.foundation.isSystemInDarkTheme()
 
-            // ✅ tema efectivo: guardado si existe, si no el del sistema
+            // tema efectivo: guardado si existe, si no el del sistema
             val useDarkTheme = pref ?: systemDark
 
             // (tu SideEffect de status bar usando useDarkTheme)

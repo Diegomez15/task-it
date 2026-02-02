@@ -40,19 +40,19 @@ class CalendarViewModel(application: Application) : AndroidViewModel(application
                 val monthStart = month.atDay(1)
                 val monthEnd = month.atEndOfMonth()
 
-                // ✅ markers del mes (1 punto por prioridad presente)
+                // markers del mes (1 punto por prioridad presente)
                 val markers: Map<LocalDate, List<TaskPriority>> = tasks
                     .asSequence()
                     .filter { it.date in monthStart..monthEnd }
                     .groupBy { it.date }
                     .mapValues { (_, dayTasks) ->
                         dayTasks
-                            .filter { !it.isCompleted } // si quieres incluir completadas, quita este filtro
+                            .filter { !it.isCompleted }
                             .map { it.priority }
                             .distinct()
                     }
 
-                // ✅ tareas del día seleccionado
+                // tareas del día seleccionado
                 val daily: List<Task> = tasks
                     .filter { it.date == selected }
                     .sortedBy { it.time ?: LocalTime.MAX }

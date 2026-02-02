@@ -136,7 +136,7 @@ fun TaskListScreen(
         ) {
 
             if (tasks.isEmpty()) {
-                // ✅ Estado vacío REAL (no hay tareas en BD)
+                // Estado vacío REAL (no hay tareas en BD)
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
@@ -145,7 +145,7 @@ fun TaskListScreen(
                 }
             } else {
 
-                // ✅ Chips siempre visibles cuando hay tareas
+                // Chips siempre visibles cuando hay tareas
                 TaskPriorityFilterChips(
                     selected = selectedPriority,
                     onSelectedChange = {
@@ -189,7 +189,7 @@ fun TaskListScreen(
 
 
                 if (tasksFiltered.isEmpty()) {
-                    // ✅ No hay resultados para el filtro actual
+                    // No hay resultados para el filtro actual
                     Box(
                         modifier = Modifier.fillMaxSize(),
                         contentAlignment = Alignment.Center
@@ -260,11 +260,11 @@ fun TaskListScreen(
             onDismiss = { selectedTask = null },
             onDelete = {
                 selectedTask = null
-                taskToDelete = task // ✅ usa tu dialog de confirmación actual
+                taskToDelete = task // usa dialog de confirmación
             },
             onEdit = {
                 selectedTask = null
-                onEditTaskClick(task.id) // ✅ navega al form con id
+                onEditTaskClick(task.id) // navega al form con id
             }
         )
     }

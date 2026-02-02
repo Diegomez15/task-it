@@ -38,7 +38,7 @@ fun TaskDetailsBottomSheet(
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     val dateText = remember(task.date) {
-        // Ajusta el formato a lo que ya uses en tu app si quieres
+        // Ajusta el formato
         task.date.format(DateTimeFormatter.ofPattern("d 'de' MMMM, yyyy"))
     }
     val timeText = remember(task.time) {

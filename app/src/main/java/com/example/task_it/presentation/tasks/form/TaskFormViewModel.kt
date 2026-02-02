@@ -34,15 +34,13 @@ class TaskFormViewModel(
     ): String? {
         val now = LocalDateTime.now()
 
-        // ✅ MODO EDICIÓN: si el usuario NO ha cambiado fecha/hora,
-        // permitimos que la tarea siga estando en el pasado.
         if (originalDate != null) {
             val sameDate = date == originalDate
-            val sameTime = time == originalTime // contempla null == null
+            val sameTime = time == originalTime
             if (sameDate && sameTime) return null
         }
 
-        // A partir de aquí, aplicamos regla estricta (crear o editar cambiando fecha/hora)
+
         if (time == null) {
             return if (date.isBefore(now.toLocalDate())) {
                 "No puedes seleccionar una fecha pasada"
@@ -179,11 +177,7 @@ class TaskFormViewModel(
         )
     }
 
-    /**
-     * ✅ Un único submit:
-     * - si taskId == null -> INSERT
-     * - si taskId != null -> UPDATE
-     */
+
     fun submitTask() {
         val state = _uiState.value
         if (!state.isSubmitEnabled) return

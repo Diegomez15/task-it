@@ -78,48 +78,17 @@ fun TaskItem(
                     .alpha(contentAlpha),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-
-
-                    Text(
-                        text = task.title,
-                        style = MaterialTheme.typography.titleMedium.copy(
-                            textDecoration = if (task.isCompleted) TextDecoration.LineThrough else null
-                        ),
-                        modifier = Modifier
-                            .weight(1f)
-                            .padding(top = 2.dp)
-                            .padding(end = 8.dp),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-
-
-
-                    IconButton(
-                        onClick = { onToggleCompleted(task) },
-                        modifier = Modifier.size(36.dp)
-                    ) {
-                        Icon(
-                            imageVector = if (task.isCompleted)
-                                Icons.Filled.CheckCircle
-                            else
-                                Icons.Outlined.RadioButtonUnchecked,
-                            contentDescription = if (task.isCompleted)
-                                "Marcar como pendiente"
-                            else
-                                "Marcar como completada",
-                            tint = if (task.isCompleted)
-                                YellowPrimary
-                            else
-                                MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-
-                }
+                Text(
+                    text = task.title,
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        textDecoration = if (task.isCompleted) TextDecoration.LineThrough else null
+                    ),
+                    modifier = Modifier
+                        .padding(top = 2.dp)
+                        .padding(end = 8.dp),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
 
                 // Fecha
                 Row(
@@ -146,18 +115,17 @@ fun TaskItem(
                     )
                 }
 
-
-
                 // Hora (opcional)
                 task.time?.let {
                     MetaRow(
                         icon = {
-                            Icon(Icons.Outlined.Schedule,
+                            Icon(
+                                Icons.Outlined.Schedule,
                                 contentDescription = null,
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier.size(20.dp)
                             )
-                               },
+                        },
                         text = it.format(timeFormatter)
                     )
                 }
@@ -166,7 +134,8 @@ fun TaskItem(
                 task.location?.takeIf { it.isNotBlank() }?.let {
                     MetaRow(
                         icon = {
-                            Icon(Icons.Outlined.LocationOn,
+                            Icon(
+                                Icons.Outlined.LocationOn,
                                 contentDescription = null,
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier.size(20.dp)
@@ -183,6 +152,30 @@ fun TaskItem(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
+
+            //Check para completar tarea
+            IconButton(
+                onClick = { onToggleCompleted(task) },
+                modifier = Modifier
+                    .size(36.dp)
+                    .align(Alignment.Top)
+            ) {
+                Icon(
+                    imageVector = if (task.isCompleted)
+                        Icons.Filled.CheckCircle
+                    else
+                        Icons.Outlined.RadioButtonUnchecked,
+                    contentDescription = if (task.isCompleted)
+                        "Marcar como pendiente"
+                    else
+                        "Marcar como completada",
+                    tint = if (task.isCompleted)
+                        YellowPrimary
+                    else
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
         }
     }
 }

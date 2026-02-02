@@ -58,7 +58,7 @@ fun AppNavHost(
             val effectiveTaskId = taskId.takeIf { it != -1L }
 
             TaskFormScreen(
-                taskId = effectiveTaskId, // ✅ null = crear, id = editar
+                taskId = effectiveTaskId,
                 onCancel = { navController.popBackStack() },
                 onCreateTask = { navController.popBackStack() }
             )

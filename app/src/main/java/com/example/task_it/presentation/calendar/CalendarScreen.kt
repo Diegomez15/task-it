@@ -81,7 +81,7 @@ fun CalendarScreen(
             TaskBottomBar(
                 selectedTab = BottomTab.CALENDAR,
                 onTasksClick = onTasksClick,
-                onCalendarClick = { /* ya estás */ }
+                onCalendarClick = {}
             )
         }
     ) { padding ->
@@ -171,11 +171,11 @@ fun CalendarScreen(
             onDismiss = { selectedTask = null },
             onDelete = {
                 selectedTask = null
-                taskToDelete = task // ✅ usa tu dialog de confirmación actual
+                taskToDelete = task //dialog de confirmación
             },
             onEdit = {
                 selectedTask = null
-                onEditTaskClick(task.id) // ✅ navega al form con id
+                onEditTaskClick(task.id) // navega al form con id
             }
         )
     }
@@ -447,11 +447,11 @@ private fun DayCell(
             textAlign = TextAlign.Center
         )
 
-        // Puntitos (si quieres que fuera de mes no salgan, lo dejamos como está)
+        // Puntitos de importancia
         Row(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .padding(bottom = 6.dp)
+                .padding(bottom = 4.dp)
                 .alpha(contentAlpha),
             horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {
@@ -551,7 +551,7 @@ private fun CalendarTaskRow(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(IntrinsicSize.Min) // ✅ barra se adapta al alto real
+                .height(IntrinsicSize.Min)
                 .padding(vertical = 12.dp, horizontal = 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {

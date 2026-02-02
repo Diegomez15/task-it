@@ -48,7 +48,7 @@ dependencies {
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
 
-    // ✅ Compose BOM
+
     implementation(platform(libs.androidx.compose.bom))
 
     implementation(libs.androidx.compose.ui)
@@ -60,7 +60,7 @@ dependencies {
 
     implementation(libs.androidx.navigation.compose)
 
-    // ✅ ROOM SOLO ANDROID
+    
     implementation(libs.androidx.room.runtime)
     kapt(libs.androidx.room.compiler)
     implementation(libs.androidx.room.ktx)
