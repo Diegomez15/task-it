@@ -13,18 +13,20 @@ import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
+import com.example.task_it.domain.usecase.AddTaskUseCase
+import com.example.task_it.domain.usecase.UpdateTaskUseCase
+import com.example.task_it.domain.usecase.GetTaskByIdUseCase
 
 class TaskFormViewModel(
     application: Application,
-    private val taskId: Long?
+    private val taskId: Long?,
+    private val addTaskUseCase: AddTaskUseCase = AppModule.provideAddTaskUseCase(application),
+    private val updateTaskUseCase: UpdateTaskUseCase = AppModule.provideUpdateTaskUseCase(application),
+    private val getTaskByIdUseCase: GetTaskByIdUseCase = AppModule.provideGetTaskByIdUseCase(application)
 ) : AndroidViewModel(application) {
 
     private val _uiState = MutableStateFlow(TaskFormUiState())
     val uiState: StateFlow<TaskFormUiState> = _uiState
-
-    private val addTaskUseCase = AppModule.provideAddTaskUseCase(application)
-    private val updateTaskUseCase = AppModule.provideUpdateTaskUseCase(application)
-    private val getTaskByIdUseCase = AppModule.provideGetTaskByIdUseCase(application)
 
     private fun validateDateTime(
         date: LocalDate,
