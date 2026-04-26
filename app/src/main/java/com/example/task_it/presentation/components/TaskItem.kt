@@ -24,6 +24,7 @@ import java.time.format.DateTimeFormatter
 import java.util.Locale
 import com.example.task_it.presentation.theme.color
 import com.example.task_it.presentation.utils.isOverdue
+import androidx.compose.ui.platform.testTag
 
 
 
@@ -42,7 +43,7 @@ fun TaskItem(
 
 
     ElevatedCard(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth().testTag("taskItem"),
         shape = RoundedCornerShape(8.dp),
         colors = CardDefaults.elevatedCardColors(
             containerColor = MaterialTheme.colorScheme.surfaceBright
@@ -85,7 +86,8 @@ fun TaskItem(
                     ),
                     modifier = Modifier
                         .padding(top = 2.dp)
-                        .padding(end = 8.dp),
+                        .padding(end = 8.dp)
+                        .testTag("taskTitle"),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -108,10 +110,12 @@ fun TaskItem(
                             if (isOverdue) append(" (atrasada)")
                         },
                         style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.testTag("taskDate"),
                         color = if (isOverdue)
                             MaterialTheme.colorScheme.error
                         else
                             MaterialTheme.colorScheme.onSurfaceVariant
+
                     )
                 }
 
@@ -159,6 +163,7 @@ fun TaskItem(
                 modifier = Modifier
                     .size(36.dp)
                     .align(Alignment.Top)
+                    .testTag("taskCheck")
             ) {
                 Icon(
                     imageVector = if (task.isCompleted)
