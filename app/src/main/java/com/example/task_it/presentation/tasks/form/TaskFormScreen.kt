@@ -25,6 +25,7 @@ import com.example.task_it.presentation.components.PriorityChip
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
+import androidx.compose.ui.platform.testTag
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -35,7 +36,6 @@ fun TaskFormScreen(
 ) {
     val context = LocalContext.current
 
-    //ViewModel con Application + taskId
     val viewModel: TaskFormViewModel = viewModel(
         factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
@@ -49,17 +49,7 @@ fun TaskFormScreen(
     )
 
     val state by viewModel.uiState.collectAsState()
-    val scrollState = rememberScrollState()
-
     val isEditMode = taskId != null
-
-    val dateFormatter = remember { DateTimeFormatter.ofPattern("dd / MM / yyyy") }
-    val timeFormatter = remember { DateTimeFormatter.ofPattern("HH:mm") }
-
-    val dateTimeError = state.dateTimeError
-
-
-
 
     val datePickerDialog = remember(state.date) {
         DatePickerDialog(
@@ -85,6 +75,40 @@ fun TaskFormScreen(
         )
     }
 
+    TaskFormContent(
+        state = state,
+        isEditMode = isEditMode,
+        onTitleChange = viewModel::onTitleChange,
+        onDescriptionChange = viewModel::onDescriptionChange,
+        onPriorityChange = viewModel::onPriorityChange,
+        onDateClick = { datePickerDialog.show() },
+        onTimeClick = { timePickerDialog.show() },
+        onLocationChange = viewModel::onLocationChange,
+        onCancel = onCancel,
+        onSubmit = {
+            viewModel.submitTask()
+            onCreateTask()
+        }
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun TaskFormContent(
+    state: TaskFormUiState,
+    isEditMode: Boolean,
+    onTitleChange: (String) -> Unit,
+    onDescriptionChange: (String) -> Unit,
+    onPriorityChange: (TaskPriority) -> Unit,
+    onDateClick: () -> Unit,
+    onTimeClick: () -> Unit,
+    onLocationChange: (String) -> Unit,
+    onCancel: () -> Unit,
+    onSubmit: () -> Unit
+) {
+    val scrollState = rememberScrollState()
+    val dateFormatter = remember { DateTimeFormatter.ofPattern("dd / MM / yyyy") }
+    val timeFormatter = remember { DateTimeFormatter.ofPattern("HH:mm") }
 
     Scaffold(
         modifier = Modifier,
@@ -92,16 +116,13 @@ fun TaskFormScreen(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .navigationBarsPadding() // evita que lo tape la barra 3-botones
+                    .navigationBarsPadding()
             ) {
                 TaskFormBottomBar(
                     isEnabled = state.isSubmitEnabled,
                     isEditMode = isEditMode,
                     onCancel = onCancel,
-                    onSubmit = {
-                        viewModel.submitTask()
-                        onCreateTask()
-                    }
+                    onSubmit = onSubmit
                 )
             }
         }
@@ -113,8 +134,8 @@ fun TaskFormScreen(
                 .padding(horizontal = 12.dp)
                 .fillMaxSize()
                 .verticalScroll(scrollState)
+                .testTag("taskFormContent")
         ) {
-            // Cabecera
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -124,9 +145,12 @@ fun TaskFormScreen(
                     Text(
                         text = if (isEditMode) "Editar tarea" else "Nueva tarea",
                         style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.testTag("taskFormTitle")
                     )
+
                     Spacer(modifier = Modifier.height(4.dp))
+
                     Text(
                         text = if (isEditMode)
                             "Modifica los detalles de tu tarea"
@@ -137,7 +161,10 @@ fun TaskFormScreen(
                     )
                 }
 
-                IconButton(onClick = onCancel) {
+                IconButton(
+                    onClick = onCancel,
+                    modifier = Modifier.testTag("closeButton")
+                ) {
                     Icon(
                         imageVector = Icons.Default.Close,
                         contentDescription = "Cerrar"
@@ -147,61 +174,59 @@ fun TaskFormScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Sección Título
             FormSectionCard(title = "Título") {
                 OutlinedTextField(
                     value = state.title,
-                    onValueChange = viewModel::onTitleChange,
+                    onValueChange = onTitleChange,
                     shape = RoundedCornerShape(8.dp),
                     label = { Text("Título") },
                     supportingText = {
                         Text("${state.title.length}/${TaskFormLimits.TITLE_MAX}")
                     },
                     singleLine = true,
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag("titleField"),
                     colors = TextFieldDefaults.outlinedTextFieldColors(
                         containerColor = MaterialTheme.colorScheme.background
                     )
-
                 )
             }
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Sección Descripción
             FormSectionCard(title = "Descripción (opcional)") {
                 OutlinedTextField(
                     value = state.description,
-                    onValueChange = viewModel::onDescriptionChange,
+                    onValueChange = onDescriptionChange,
                     shape = RoundedCornerShape(8.dp),
                     label = { Text("Descripción") },
                     supportingText = {
                         Text("${state.description.length}/${TaskFormLimits.DESCRIPTION_MAX}")
                     },
                     maxLines = 3,
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag("descriptionField"),
                     colors = TextFieldDefaults.outlinedTextFieldColors(
-                        containerColor = MaterialTheme.colorScheme.background,
+                        containerColor = MaterialTheme.colorScheme.background
                     )
-
                 )
             }
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Sección Nivel de importancia
             FormSectionCard(title = "Nivel de importancia") {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     PriorityRow(
                         selected = state.priority,
-                        onPrioritySelected = { viewModel.onPriorityChange(it) }
+                        onPrioritySelected = onPriorityChange
                     )
                 }
             }
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Sección Fecha y hora
             FormSectionCard(title = "Fecha y hora") {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -213,11 +238,15 @@ fun TaskFormScreen(
                             style = MaterialTheme.typography.bodyMedium,
                             fontWeight = FontWeight.SemiBold
                         )
+
                         Spacer(modifier = Modifier.height(4.dp))
+
                         OutlinedButton(
-                            onClick = { datePickerDialog.show() },
+                            onClick = onDateClick,
                             shape = RoundedCornerShape(8.dp),
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .testTag("dateButton"),
                             colors = ButtonDefaults.buttonColors(
                                 contentColor = MaterialTheme.colorScheme.onBackground,
                                 containerColor = MaterialTheme.colorScheme.background
@@ -227,7 +256,8 @@ fun TaskFormScreen(
                                 text = state.date.format(dateFormatter),
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
-                                style = MaterialTheme.typography.bodyMedium)
+                                style = MaterialTheme.typography.bodyMedium
+                            )
                         }
                     }
 
@@ -237,11 +267,15 @@ fun TaskFormScreen(
                             style = MaterialTheme.typography.bodyMedium,
                             fontWeight = FontWeight.SemiBold
                         )
+
                         Spacer(modifier = Modifier.height(4.dp))
+
                         OutlinedButton(
-                            onClick = { timePickerDialog.show() },
+                            onClick = onTimeClick,
                             shape = RoundedCornerShape(8.dp),
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .testTag("timeButton"),
                             colors = ButtonDefaults.buttonColors(
                                 contentColor = MaterialTheme.colorScheme.onBackground,
                                 containerColor = MaterialTheme.colorScheme.background
@@ -256,35 +290,36 @@ fun TaskFormScreen(
                         }
                     }
                 }
-                if (dateTimeError != null) {
+
+                if (state.dateTimeError != null) {
                     Text(
-                        text = dateTimeError,
+                        text = state.dateTimeError,
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.error
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.testTag("dateTimeError")
                     )
                 }
-
             }
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Sección Ubicación (opcional)
             FormSectionCard(title = "Ubicación (opcional)") {
                 OutlinedTextField(
                     value = state.location ?: "",
-                    onValueChange = viewModel::onLocationChange,
+                    onValueChange = onLocationChange,
                     label = { Text("Ubicación (opcional)") },
                     supportingText = {
                         val text = state.location ?: ""
                         Text("${text.length}/${TaskFormLimits.LOCATION_MAX}")
                     },
                     singleLine = true,
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag("locationField"),
                     shape = RoundedCornerShape(8.dp),
                     colors = TextFieldDefaults.outlinedTextFieldColors(
                         containerColor = MaterialTheme.colorScheme.background
                     )
-
                 )
             }
 
@@ -314,7 +349,8 @@ private fun TaskFormBottomBar(
                 shape = RoundedCornerShape(8.dp),
                 modifier = Modifier
                     .weight(1f)
-                    .height(40.dp),
+                    .height(40.dp)
+                    .testTag("cancelButton"),
                 colors = ButtonDefaults.buttonColors(
                     contentColor = MaterialTheme.colorScheme.primary,
                     containerColor = MaterialTheme.colorScheme.background
@@ -332,7 +368,8 @@ private fun TaskFormBottomBar(
                 shape = RoundedCornerShape(8.dp),
                 modifier = Modifier
                     .weight(1f)
-                    .height(40.dp),
+                    .height(40.dp)
+                    .testTag("submitButton"),
                 enabled = isEnabled
             ) {
                 Text(
