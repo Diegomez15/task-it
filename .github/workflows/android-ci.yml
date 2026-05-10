@@ -33,10 +33,10 @@ jobs:
       - name: Run instrumented tests (UI tests)
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 35
+          api-level: 30
           target: google_apis
           arch: x86_64
-          profile: pixel_6
-          emulator-options: -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect
+          profile: pixel_2
+          emulator-options: -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect -no-snapshot-save
           disable-animations: true
           script: ./gradlew connectedDebugAndroidTest
