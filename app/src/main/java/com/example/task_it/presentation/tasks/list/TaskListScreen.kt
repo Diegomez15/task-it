@@ -63,17 +63,11 @@ fun TaskListScreen(
 
 
     val tasksFiltered = remember(tasks, selectedPriority, searchQuery) {
-        val byPriority =
-            if (selectedPriority == null) tasks
-            else tasks.filter { it.priority == selectedPriority }
-
-        val query = searchQuery.trim()
-
-        val byTitle =
-            if (query.isBlank()) byPriority
-            else byPriority.filter { it.title.contains(query, ignoreCase = true) }
-
-        byTitle.sortedWith(compareBy<Task> { it.isCompleted }.thenBy { it.date })
+        filterAndSortTasks(
+            tasks = tasks,
+            selectedPriority = selectedPriority,
+            searchQuery = searchQuery
+        )
     }
 
 
