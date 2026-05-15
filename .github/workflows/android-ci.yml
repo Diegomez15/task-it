@@ -34,26 +34,6 @@ jobs:
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 30
-          target: google_apis
+          target: default
           arch: x86_64
-          profile: pixel_2
-          emulator-options: -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect -no-snapshot -no-snapshot-save
-          disable-animations: true
-          script: |
-            adb wait-for-device
-            boot_completed=""
-            until [[ "$boot_completed" == "1" ]]; do
-              boot_completed=$(adb shell getprop sys.boot_completed | tr -d '\r')
-              echo "Waiting for emulator boot..."
-              sleep 5
-            done
-
-            api_level=$(adb shell getprop ro.build.version.sdk | tr -d '\r')
-            echo "Emulator API level: $api_level"
-
-            if [[ "$api_level" -lt 21 ]]; then
-              echo "Invalid emulator API level: $api_level"
-              exit 1
-            fi
-
-            ./gradlew connectedDebugAndroidTest --stacktrace
+          script: ./gradlew connectedDebugAndroidTest
