@@ -13,5 +13,6 @@ data class Task(
     val time: LocalTime? = null,
     val location: String? = null,
     val isCompleted: Boolean = false,
-    val createdAt: LocalDateTime = LocalDateTime.now()
+    val createdAt: LocalDateTime = LocalDateTime.now(),
+    val reminderMinutesBefore: Int? = null
 )

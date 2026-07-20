@@ -18,14 +18,23 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.flow.first
 import com.example.task_it.data.preferences.ThemePreferences
-
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
 
 
 class MainActivity : ComponentActivity() {
 
+    private val requestNotificationPermissionLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) {
+            // No necesitamos hacer nada aquí: si el usuario lo concede,
+            // los próximos recordatorios podrán mostrar notificaciones.
+        }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
+        requestNotificationPermissionIfNeeded()
         enableEdgeToEdge(
             statusBarStyle = SystemBarStyle.auto(
                 lightScrim = android.graphics.Color.TRANSPARENT,
@@ -69,5 +78,18 @@ class MainActivity : ComponentActivity() {
             }
         }
 
+    }
+    private fun requestNotificationPermissionIfNeeded() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return
+
+        val permission = Manifest.permission.POST_NOTIFICATIONS
+        val isGranted = ContextCompat.checkSelfPermission(
+            this,
+            permission
+        ) == PackageManager.PERMISSION_GRANTED
+
+        if (!isGranted) {
+            requestNotificationPermissionLauncher.launch(permission)
+        }
     }
 }

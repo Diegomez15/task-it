@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import com.example.task_it.notifications.TaskReminderScheduler
 
 class TaskListViewModel(
     application: Application,
@@ -34,17 +35,25 @@ class TaskListViewModel(
             initialValue = emptyList()
         )
 
+    private val reminderScheduler = TaskReminderScheduler(application.applicationContext)
+
     fun deleteTask(task: Task) {
         viewModelScope.launch {
+            reminderScheduler.cancel(task.id)
             deleteTaskUseCase(task)
         }
     }
 
     fun toggleTaskCompleted(task: Task) {
         viewModelScope.launch {
-            updateTaskUseCase(
-                task.copy(isCompleted = !task.isCompleted)
-            )
+            val updatedTask = task.copy(isCompleted = !task.isCompleted)
+            updateTaskUseCase(updatedTask)
+
+            if (updatedTask.isCompleted) {
+                reminderScheduler.cancel(updatedTask.id)
+            } else {
+                reminderScheduler.schedule(updatedTask)
+            }
         }
     }
 }

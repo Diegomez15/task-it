@@ -27,6 +27,7 @@ import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import androidx.compose.ui.platform.testTag
 
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TaskFormScreen(
@@ -83,6 +84,7 @@ fun TaskFormScreen(
         onPriorityChange = viewModel::onPriorityChange,
         onDateClick = { datePickerDialog.show() },
         onTimeClick = { timePickerDialog.show() },
+        onReminderChange = viewModel::onReminderChange,
         onLocationChange = viewModel::onLocationChange,
         onCancel = onCancel,
         onSubmit = {
@@ -102,6 +104,7 @@ fun TaskFormContent(
     onPriorityChange: (TaskPriority) -> Unit,
     onDateClick: () -> Unit,
     onTimeClick: () -> Unit,
+    onReminderChange: (Int?) -> Unit = {},
     onLocationChange: (String) -> Unit,
     onCancel: () -> Unit,
     onSubmit: () -> Unit
@@ -109,6 +112,25 @@ fun TaskFormContent(
     val scrollState = rememberScrollState()
     val dateFormatter = remember { DateTimeFormatter.ofPattern("dd / MM / yyyy") }
     val timeFormatter = remember { DateTimeFormatter.ofPattern("HH:mm") }
+
+    var reminderMenuExpanded by remember { mutableStateOf(false) }
+
+    val reminderOptions = remember {
+        listOf(
+            0 to "A la hora de la tarea",
+            10 to "10 minutos antes",
+            30 to "30 minutos antes",
+            60 to "1 hora antes",
+            1440 to "1 día antes"
+        )
+    }
+
+    val reminderEnabled = state.reminderMinutesBefore != null
+
+    val selectedReminderLabel = reminderOptions
+        .firstOrNull { it.first == state.reminderMinutesBefore }
+        ?.second
+        ?: "A la hora de la tarea"
 
     Scaffold(
         modifier = Modifier,
@@ -298,6 +320,85 @@ fun TaskFormContent(
                         color = MaterialTheme.colorScheme.error,
                         modifier = Modifier.testTag("dateTimeError")
                     )
+                }
+
+                HorizontalDivider()
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Column(
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text(
+                            text = "Recordatorio",
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.SemiBold
+                        )
+
+                        Text(
+                            text = if (state.time == null) {
+                                "Selecciona una hora para activar el recordatorio"
+                            } else {
+                                "Recibe una notificación para esta tarea"
+                            },
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+
+                    Switch(
+                        checked = reminderEnabled,
+                        onCheckedChange = { checked ->
+                            onReminderChange(if (checked) 0 else null)
+                        },
+                        enabled = state.time != null,
+                        modifier = Modifier.testTag("reminderSwitch")
+                    )
+                }
+
+                if (reminderEnabled && state.time != null) {
+                    ExposedDropdownMenuBox(
+                        expanded = reminderMenuExpanded,
+                        onExpandedChange = {
+                            reminderMenuExpanded = !reminderMenuExpanded
+                        }
+                    ) {
+                        OutlinedTextField(
+                            value = selectedReminderLabel,
+                            onValueChange = {},
+                            readOnly = true,
+                            label = { Text("Avisar") },
+                            trailingIcon = {
+                                ExposedDropdownMenuDefaults.TrailingIcon(
+                                    expanded = reminderMenuExpanded
+                                )
+                            },
+                            modifier = Modifier
+                                .menuAnchor()
+                                .fillMaxWidth()
+                                .testTag("reminderDropdown")
+                        )
+
+                        ExposedDropdownMenu(
+                            expanded = reminderMenuExpanded,
+                            onDismissRequest = {
+                                reminderMenuExpanded = false
+                            }
+                        ) {
+                            reminderOptions.forEach { (minutes, label) ->
+                                DropdownMenuItem(
+                                    text = { Text(label) },
+                                    onClick = {
+                                        onReminderChange(minutes)
+                                        reminderMenuExpanded = false
+                                    }
+                                )
+                            }
+                        }
+                    }
                 }
             }
 

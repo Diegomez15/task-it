@@ -6,7 +6,7 @@ import com.example.task_it.domain.repository.TaskRepository
 class AddTaskUseCase(
     private val repository: TaskRepository
 ) {
-    suspend operator fun invoke(task: Task) {
-        repository.insertTask(task)
+    suspend operator fun invoke(task: Task): Long {
+        return repository.insertTask(task)
     }
 }

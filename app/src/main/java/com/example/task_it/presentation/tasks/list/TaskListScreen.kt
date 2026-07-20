@@ -39,10 +39,6 @@ import com.example.task_it.presentation.components.BottomTab
 
 
 
-
-
-
-
 @Composable
 fun TaskListScreen(
     modifier: Modifier = Modifier,

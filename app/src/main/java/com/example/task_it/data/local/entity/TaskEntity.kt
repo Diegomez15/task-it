@@ -15,5 +15,6 @@ data class TaskEntity(
     val time: String?,
     val location: String?,
     val isCompleted: Boolean,
-    val createdAt: String
+    val createdAt: String,
+    val reminderMinutesBefore: Int? = null
 )

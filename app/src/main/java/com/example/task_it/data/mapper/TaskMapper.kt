@@ -16,7 +16,8 @@ fun TaskEntity.toDomain(): Task {
         time = time?.let { LocalTime.parse(it) },
         location = location,
         isCompleted = isCompleted,
-        createdAt = LocalDateTime.parse(createdAt)
+        createdAt = LocalDateTime.parse(createdAt),
+        reminderMinutesBefore = reminderMinutesBefore
     )
 }
 
@@ -30,6 +31,7 @@ fun Task.toEntity(): TaskEntity {
         time = time?.toString(),
         location = location,
         isCompleted = isCompleted,
-        createdAt = createdAt.toString()
+        createdAt = createdAt.toString(),
+        reminderMinutesBefore = reminderMinutesBefore
     )
 }

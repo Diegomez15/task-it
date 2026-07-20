@@ -16,6 +16,7 @@ import java.time.LocalTime
 import com.example.task_it.domain.usecase.AddTaskUseCase
 import com.example.task_it.domain.usecase.UpdateTaskUseCase
 import com.example.task_it.domain.usecase.GetTaskByIdUseCase
+import com.example.task_it.notifications.TaskReminderScheduler
 
 class TaskFormViewModel(
     application: Application,
@@ -27,6 +28,7 @@ class TaskFormViewModel(
 
     private val _uiState = MutableStateFlow(TaskFormUiState())
     val uiState: StateFlow<TaskFormUiState> = _uiState
+    private val reminderScheduler = TaskReminderScheduler(application.applicationContext)
 
     private fun validateDateTime(
         date: LocalDate,
@@ -88,6 +90,7 @@ class TaskFormViewModel(
                     date = task.date,
                     time = task.time,
                     location = task.location.orEmpty(),
+                    reminderMinutesBefore = task.reminderMinutesBefore,
                     dateTimeError = err,
                     isSubmitEnabled = isFormValid(
                         _uiState.value.copy(
@@ -163,11 +166,28 @@ class TaskFormViewModel(
 
             val updatedState = state.copy(
                 time = time,
+                reminderMinutesBefore = if (time == null) {
+                    null
+                } else {
+                    state.reminderMinutesBefore
+                },
                 dateTimeError = err
             )
 
             updatedState.copy(
                 isSubmitEnabled = isFormValid(updatedState)
+            )
+        }
+    }
+
+    fun onReminderChange(minutesBefore: Int?) {
+        _uiState.update { state ->
+            state.copy(
+                reminderMinutesBefore = if (state.time == null) {
+                    null
+                } else {
+                    minutesBefore?.takeIf { it >= 0 }
+                }
             )
         }
     }
@@ -195,12 +215,22 @@ class TaskFormViewModel(
             time = state.time,
             location = state.location?.trim()?.ifBlank { null },
             isCompleted = existing?.isCompleted ?: false,
-            createdAt = existing?.createdAt ?: LocalDateTime.now()
+            createdAt = existing?.createdAt ?: LocalDateTime.now(),
+            reminderMinutesBefore = state.reminderMinutesBefore
+                .takeIf { state.time != null }
         )
 
         viewModelScope.launch {
-            if (existing == null) addTaskUseCase(task)
-            else updateTaskUseCase(task)
+            if (existing == null) {
+                val createdTaskId = addTaskUseCase(task)
+                reminderScheduler.schedule(
+                    task.copy(id = createdTaskId)
+                )
+            } else {
+                updateTaskUseCase(task)
+                reminderScheduler.cancel(existing.id)
+                reminderScheduler.schedule(task)
+            }
         }
     }
 

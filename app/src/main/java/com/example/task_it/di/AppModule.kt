@@ -22,7 +22,9 @@ object AppModule {
                 context,
                 AppDatabase::class.java,
                 "taskit_db"
-            ).build()
+            )
+                .addMigrations(AppDatabase.MIGRATION_1_2)
+                .build()
         }
         return database
     }

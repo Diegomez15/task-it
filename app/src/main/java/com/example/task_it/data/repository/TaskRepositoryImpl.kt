@@ -12,8 +12,8 @@ class TaskRepositoryImpl(
     private val taskDao: TaskDao
 ) : TaskRepository {
 
-    override suspend fun insertTask(task: Task) {
-        taskDao.insertTask(task.toEntity())
+    override suspend fun insertTask(task: Task): Long {
+        return taskDao.insertTask(task.toEntity())
     }
 
     override suspend fun updateTask(task: Task) {
