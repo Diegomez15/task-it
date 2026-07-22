@@ -1,8 +1,12 @@
 package com.example.task_it.presentation.tasks.form
-
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.TimePicker
+import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.material3.rememberTimePickerState
+import java.time.Instant
+import java.time.ZoneOffset
 import android.app.Application
-import android.app.DatePickerDialog
-import android.app.TimePickerDialog
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -26,6 +30,10 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import androidx.compose.ui.platform.testTag
+import androidx.compose.material3.DatePickerDefaults
+import androidx.compose.material3.TimePickerDefaults
+import androidx.compose.material3.ButtonDefaults
+import com.example.task_it.presentation.theme.YellowPrimary
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -52,29 +60,8 @@ fun TaskFormScreen(
     val state by viewModel.uiState.collectAsState()
     val isEditMode = taskId != null
 
-    val datePickerDialog = remember(state.date) {
-        DatePickerDialog(
-            context,
-            { _, year, month, day ->
-                viewModel.onDateChange(LocalDate.of(year, month + 1, day))
-            },
-            state.date.year,
-            state.date.monthValue - 1,
-            state.date.dayOfMonth
-        )
-    }
-
-    val timePickerDialog = remember(state.time) {
-        TimePickerDialog(
-            context,
-            { _, hour, minute ->
-                viewModel.onTimeChange(LocalTime.of(hour, minute))
-            },
-            state.time?.hour ?: LocalTime.now().hour,
-            state.time?.minute ?: LocalTime.now().minute,
-            true
-        )
-    }
+    var showDatePicker by remember { mutableStateOf(false) }
+    var showTimePicker by remember { mutableStateOf(false) }
 
     TaskFormContent(
         state = state,
@@ -82,8 +69,8 @@ fun TaskFormScreen(
         onTitleChange = viewModel::onTitleChange,
         onDescriptionChange = viewModel::onDescriptionChange,
         onPriorityChange = viewModel::onPriorityChange,
-        onDateClick = { datePickerDialog.show() },
-        onTimeClick = { timePickerDialog.show() },
+        onDateClick = { showDatePicker = true },
+        onTimeClick = { showTimePicker = true },
         onReminderChange = viewModel::onReminderChange,
         onLocationChange = viewModel::onLocationChange,
         onCancel = onCancel,
@@ -92,6 +79,22 @@ fun TaskFormScreen(
             onCreateTask()
         }
     )
+
+    if (showDatePicker) {
+        TaskDatePickerDialog(
+            initialDate = state.date,
+            onDismiss = { showDatePicker = false },
+            onConfirm = { viewModel.onDateChange(it) }
+        )
+    }
+
+    if (showTimePicker) {
+        TaskTimePickerDialog(
+            initialTime = state.time ?: LocalTime.now(),
+            onDismiss = { showTimePicker = false },
+            onConfirm = { viewModel.onTimeChange(it) }
+        )
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -512,6 +515,137 @@ private fun FormSectionCard(
             content()
         }
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun TaskDatePickerDialog(
+    initialDate: LocalDate,
+    onDismiss: () -> Unit,
+    onConfirm: (LocalDate) -> Unit
+) {
+    val initialMillis = initialDate
+        .atStartOfDay(ZoneOffset.UTC)
+        .toInstant()
+        .toEpochMilli()
+
+    val datePickerState = rememberDatePickerState(
+        initialSelectedDateMillis = initialMillis
+    )
+
+    DatePickerDialog(
+        onDismissRequest = onDismiss,
+        shape = RoundedCornerShape(8.dp),
+        colors = DatePickerDefaults.colors(
+            containerColor = MaterialTheme.colorScheme.surfaceBright
+        ),
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    datePickerState.selectedDateMillis?.let { millis ->
+                        val date = Instant.ofEpochMilli(millis)
+                            .atZone(ZoneOffset.UTC)
+                            .toLocalDate()
+                        onConfirm(date)
+                    }
+                    onDismiss()
+                },
+                colors = ButtonDefaults.textButtonColors(
+                    contentColor = YellowPrimary
+                )
+            ) {
+                Text("Aceptar")
+            }
+        },
+        dismissButton = {
+            TextButton(
+                onClick = onDismiss,
+                colors = ButtonDefaults.textButtonColors(
+                    contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            ) {
+                Text("Cancelar")
+            }
+        }
+    ) {
+        DatePicker(
+            state = datePickerState,
+            colors = DatePickerDefaults.colors(
+                containerColor = MaterialTheme.colorScheme.surfaceBright,
+                selectedDayContainerColor = YellowPrimary,
+                selectedDayContentColor = MaterialTheme.colorScheme.onPrimary,
+                todayDateBorderColor = YellowPrimary,
+                todayContentColor = YellowPrimary,
+                selectedYearContainerColor = YellowPrimary,
+                selectedYearContentColor = MaterialTheme.colorScheme.onPrimary,
+                currentYearContentColor = YellowPrimary
+            )
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun TaskTimePickerDialog(
+    initialTime: LocalTime,
+    onDismiss: () -> Unit,
+    onConfirm: (LocalTime) -> Unit
+) {
+    val timePickerState = rememberTimePickerState(
+        initialHour = initialTime.hour,
+        initialMinute = initialTime.minute,
+        is24Hour = true
+    )
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        containerColor = MaterialTheme.colorScheme.surfaceBright,
+        shape = RoundedCornerShape(8.dp),
+        title = { Text("Selecciona una hora") },
+        text = {
+            Box(
+                modifier = Modifier.fillMaxWidth(),
+                contentAlignment = Alignment.Center
+            ) {
+                TimePicker(
+                    state = timePickerState,
+                    colors = TimePickerDefaults.colors(
+                        selectorColor = YellowPrimary,
+                        containerColor = MaterialTheme.colorScheme.surfaceBright,
+                        periodSelectorSelectedContainerColor = YellowPrimary,
+                        periodSelectorSelectedContentColor = MaterialTheme.colorScheme.onPrimary,
+                        timeSelectorSelectedContainerColor = YellowPrimary,
+                        timeSelectorSelectedContentColor = MaterialTheme.colorScheme.onPrimary,
+                        timeSelectorUnselectedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                        timeSelectorUnselectedContentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    onConfirm(LocalTime.of(timePickerState.hour, timePickerState.minute))
+                    onDismiss()
+                },
+                colors = ButtonDefaults.textButtonColors(
+                    contentColor = YellowPrimary
+                )
+            ) {
+                Text("Aceptar")
+            }
+        },
+        dismissButton = {
+            TextButton(
+                onClick = onDismiss,
+                colors = ButtonDefaults.textButtonColors(
+                    contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            ) {
+                Text("Cancelar")
+            }
+        }
+    )
 }
 
 @Composable
