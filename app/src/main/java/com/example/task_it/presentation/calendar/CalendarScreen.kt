@@ -44,9 +44,7 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.foundation.layout.IntrinsicSize
-
-
-
+import androidx.compose.ui.graphics.Brush
 
 
 @Composable
@@ -54,7 +52,8 @@ fun CalendarScreen(
     isDarkTheme: Boolean,
     onToggleTheme: () -> Unit,
     onTasksClick: () -> Unit,
-    onEditTaskClick: (Long) -> Unit
+    onEditTaskClick: (Long) -> Unit,
+    onAddTaskClick: () -> Unit
 ) {
     val viewModel: CalendarViewModel = viewModel()
     val state by viewModel.state.collectAsState()
@@ -68,8 +67,6 @@ fun CalendarScreen(
         state.tasksForSelectedDate.filter { it.isCompleted }
     }
 
-
-
     Scaffold(
         topBar = {
             TaskTopBar(
@@ -77,108 +74,131 @@ fun CalendarScreen(
                 onToggleTheme = onToggleTheme
             )
         },
-        bottomBar = {
-            TaskBottomBar(
-                selectedTab = BottomTab.CALENDAR,
-                onTasksClick = onTasksClick,
-                onCalendarClick = {}
-            )
-        }
+        containerColor = MaterialTheme.colorScheme.background,
+        contentWindowInsets = WindowInsets(0, 0, 0, 0)
     ) { padding ->
 
-        Column(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(horizontal = 12.dp)
         ) {
-            Spacer(Modifier.height(12.dp))
 
-            MonthHeader(
-                month = state.currentMonth,
-                onPrev = viewModel::onPrevMonth,
-                onNext = viewModel::onNextMonth
-            )
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 12.dp)
+            ) {
+                Spacer(Modifier.height(12.dp))
 
-            Spacer(Modifier.height(12.dp))
-
-            CalendarCard(
-                month = state.currentMonth,
-                selectedDate = state.selectedDate,
-                markers = state.dayMarkers,
-                onSelect = viewModel::onSelectDate,
-                onPrevMonth = viewModel::onPrevMonth,
-                onNextMonth = viewModel::onNextMonth
-            )
-
-
-
-            Spacer(Modifier.height(16.dp))
-
-            TasksSectionHeader(
-                selectedDate = state.selectedDate,
-                taskCount = state.tasksForSelectedDate.size
-            )
-
-            Spacer(Modifier.height(10.dp))
-
-            if (state.tasksForSelectedDate.isEmpty()) {
-                EmptyDayCard(
-                    isToday = state.selectedDate == LocalDate.now()
+                MonthHeader(
+                    month = state.currentMonth,
+                    onPrev = viewModel::onPrevMonth,
+                    onNext = viewModel::onNextMonth
                 )
-            } else {
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(bottom = 16.dp),
-                    verticalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
 
-                    if (pendingTasks.isNotEmpty()) {
-                        item {
-                            SectionHeader(title = "PENDIENTES", count = pendingTasks.size)
-                        }
-                        items(pendingTasks, key = { it.id }) { task ->
-                            CalendarTaskRow(
-                                task = task,
-                                onClick = { selectedTask = task },
-                                onToggleCompleted = { viewModel.toggleCompleted(it) },
-                                modifier = Modifier.animateItem()
-                            )
-                        }
-                    }
+                Spacer(Modifier.height(12.dp))
 
-                    if (completedTasks.isNotEmpty()) {
-                        item {
-                            SectionHeader(title = "COMPLETADAS", count = completedTasks.size)
+                CalendarCard(
+                    month = state.currentMonth,
+                    selectedDate = state.selectedDate,
+                    markers = state.dayMarkers,
+                    onSelect = viewModel::onSelectDate,
+                    onPrevMonth = viewModel::onPrevMonth,
+                    onNextMonth = viewModel::onNextMonth
+                )
+
+                Spacer(Modifier.height(16.dp))
+
+                TasksSectionHeader(
+                    selectedDate = state.selectedDate,
+                    taskCount = state.tasksForSelectedDate.size
+                )
+
+                Spacer(Modifier.height(10.dp))
+
+                if (state.tasksForSelectedDate.isEmpty()) {
+                    EmptyDayCard(
+                        isToday = state.selectedDate == LocalDate.now()
+                    )
+                } else {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(bottom = 110.dp),
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+
+                        if (pendingTasks.isNotEmpty()) {
+                            item {
+                                SectionHeader(title = "PENDIENTES", count = pendingTasks.size)
+                            }
+                            items(pendingTasks, key = { it.id }) { task ->
+                                CalendarTaskRow(
+                                    task = task,
+                                    onClick = { selectedTask = task },
+                                    onToggleCompleted = { viewModel.toggleCompleted(it) },
+                                    modifier = Modifier.animateItem()
+                                )
+                            }
                         }
-                        items(completedTasks, key = { it.id }) { task ->
-                            CalendarTaskRow(
-                                task = task,
-                                onClick = { selectedTask = task },
-                                onToggleCompleted = { viewModel.toggleCompleted(it) },
-                                modifier = Modifier.animateItem()
-                            )
+
+                        if (completedTasks.isNotEmpty()) {
+                            item {
+                                SectionHeader(title = "COMPLETADAS", count = completedTasks.size)
+                            }
+                            items(completedTasks, key = { it.id }) { task ->
+                                CalendarTaskRow(
+                                    task = task,
+                                    onClick = { selectedTask = task },
+                                    onToggleCompleted = { viewModel.toggleCompleted(it) },
+                                    modifier = Modifier.animateItem()
+                                )
+                            }
                         }
                     }
                 }
             }
 
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .height(130.dp)
+                    .background(
+                        Brush.verticalGradient(
+                            colors = listOf(
+                                MaterialTheme.colorScheme.background.copy(alpha = 0f),
+                                MaterialTheme.colorScheme.background
+                            )
+                        )
+                    )
+            )
+
+            TaskBottomBar(
+                selectedTab = BottomTab.CALENDAR,
+                onTasksClick = onTasksClick,
+                onCalendarClick = { /* ya estás */ },
+                onAddClick = onAddTaskClick,
+                modifier = Modifier.align(Alignment.BottomCenter)
+            )
         }
     }
+
     selectedTask?.let { task ->
         TaskDetailsBottomSheet(
             task = task,
             onDismiss = { selectedTask = null },
             onDelete = {
                 selectedTask = null
-                taskToDelete = task //dialog de confirmación
+                taskToDelete = task
             },
             onEdit = {
                 selectedTask = null
-                onEditTaskClick(task.id) // navega al form con id
+                onEditTaskClick(task.id)
             }
         )
     }
+
     if (taskToDelete != null) {
         AlertDialog(
             onDismissRequest = { taskToDelete = null },
@@ -227,11 +247,9 @@ fun CalendarScreen(
                         )
                     }
                 }
-
             }
         )
     }
-
 }
 
 @Composable
@@ -245,7 +263,6 @@ private fun SectionHeader(title: String, count: Int) {
         color = MaterialTheme.colorScheme.onSurfaceVariant
     )
 }
-
 
 @Composable
 private fun MonthHeader(
@@ -285,9 +302,7 @@ private fun CalendarCard(
     onSelect: (LocalDate) -> Unit,
     onPrevMonth: () -> Unit,
     onNextMonth: () -> Unit
-)
-{
-
+) {
     ElevatedCard(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(8.dp),
@@ -412,7 +427,6 @@ private fun CalendarMonthGrid(
     }
 }
 
-
 @Composable
 private fun DayCell(
     date: LocalDate,
@@ -476,7 +490,6 @@ private fun DayCell(
         }
     }
 }
-
 
 @Composable
 private fun TasksSectionHeader(selectedDate: LocalDate, taskCount: Int) {
@@ -654,7 +667,6 @@ private fun CalendarTaskRow(
         }
     }
 }
-
 
 private fun formatTime(time: LocalTime): String =
     "%02d:%02d".format(time.hour, time.minute)

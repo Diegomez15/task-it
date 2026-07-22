@@ -31,12 +31,10 @@ import com.example.task_it.presentation.tasks.detail.TaskDetailsBottomSheet
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
-import kotlinx.coroutines.flow.distinctUntilChanged
 import com.example.task_it.presentation.components.TaskTopBar
 import com.example.task_it.presentation.components.TaskBottomBar
 import com.example.task_it.presentation.components.BottomTab
-
-
+import androidx.compose.ui.graphics.Brush
 
 
 @Composable
@@ -54,9 +52,7 @@ fun TaskListScreen(
     var taskToDelete by remember { mutableStateOf<Task?>(null) }
     var selectedPriority by rememberSaveable { mutableStateOf<TaskPriority?>(null) } // null = Todas
 
-    var isSearching by rememberSaveable { mutableStateOf(false) }
     var searchQuery by rememberSaveable { mutableStateOf("") }
-
 
     val tasksFiltered = remember(tasks, selectedPriority, searchQuery) {
         filterAndSortTasks(
@@ -66,24 +62,12 @@ fun TaskListScreen(
         )
     }
 
-
     val pendingTasks = tasksFiltered.filter { !it.isCompleted }
     val completedTasks = tasksFiltered.filter { it.isCompleted }
 
-
     var selectedTask by remember { mutableStateOf<Task?>(null) }
 
-    var fabExpanded by rememberSaveable { mutableStateOf(false) }
-
     val listState = rememberLazyListState()
-
-    LaunchedEffect(listState) {
-        snapshotFlow { listState.isScrollInProgress }
-            .distinctUntilChanged()
-            .collect { isScrolling ->
-                if (isScrolling) fabExpanded = false
-            }
-    }
 
     Scaffold(
         topBar = {
@@ -92,34 +76,11 @@ fun TaskListScreen(
                 onToggleTheme = onToggleTheme
             )
         },
-        bottomBar = {
-            TaskBottomBar(
-                selectedTab = BottomTab.TASKS,
-                onTasksClick = { /* ya estás */ },
-                onCalendarClick = onCalendarClick
-            )
-        },
-        floatingActionButton = {
-            if (tasks.isNotEmpty()) {
-                ExpandableTaskFab(
-                    expanded = fabExpanded,
-                    onToggle = { fabExpanded = !fabExpanded },
-                    onSearchClick = {
-                        fabExpanded = false
-                        isSearching = true
-                    },
-                    onCreateClick = {
-                        fabExpanded = false
-                        onAddTaskClick()
-                    }
-                )
-            }
-        },
-
-        containerColor = MaterialTheme.colorScheme.background
+        containerColor = MaterialTheme.colorScheme.background,
+        contentWindowInsets = WindowInsets(0, 0, 0, 0)
     ) { innerPadding ->
 
-        Column(
+        Box(
             modifier = modifier
                 .fillMaxSize()
                 .padding(innerPadding)
@@ -135,16 +96,14 @@ fun TaskListScreen(
                 }
             } else {
 
-                // Chips siempre visibles cuando hay tareas
-                TaskPriorityFilterChips(
-                    selected = selectedPriority,
-                    onSelectedChange = {
-                        selectedPriority = it
-                        fabExpanded = false
-                    }
-                )
+                Column(modifier = Modifier.fillMaxSize()) {
 
-                if (isSearching) {
+                    // Chips siempre visibles cuando hay tareas
+                    TaskPriorityFilterChips(
+                        selected = selectedPriority,
+                        onSelectedChange = { selectedPriority = it }
+                    )
+
                     OutlinedTextField(
                         value = searchQuery,
                         onValueChange = { searchQuery = it },
@@ -152,9 +111,9 @@ fun TaskListScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 12.dp)
-                            .padding(bottom = 12.dp),
+                            .padding(top = 12.dp, bottom = 12.dp),
                         shape = RoundedCornerShape(8.dp),
-                        label = { Text("Buscar por título") },
+                        placeholder = { Text("Buscar por título") },
                         leadingIcon = {
                             Icon(
                                 imageVector = Icons.Filled.Search,
@@ -162,85 +121,99 @@ fun TaskListScreen(
                             )
                         },
                         trailingIcon = {
-                            IconButton(
-                                onClick = {
-                                    searchQuery = ""
-                                    isSearching = false
+                            if (searchQuery.isNotEmpty()) {
+                                IconButton(onClick = { searchQuery = "" }) {
+                                    Icon(
+                                        imageVector = Icons.Filled.Close,
+                                        contentDescription = "Limpiar búsqueda"
+                                    )
                                 }
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Filled.Close,
-                                    contentDescription = "Cerrar búsqueda"
-                                )
                             }
                         }
                     )
-                }
 
+                    if (tasksFiltered.isEmpty()) {
+                        // No hay resultados para el filtro actual
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "No hay tareas para este filtro",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    } else {
+                        LazyColumn(
+                            state = listState,
+                            modifier = Modifier.fillMaxSize(),
+                            contentPadding = PaddingValues(top = 0.dp, bottom = 110.dp),
+                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
 
-                if (tasksFiltered.isEmpty()) {
-                    // No hay resultados para el filtro actual
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "No hay tareas para este filtro",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                } else {
-                    LazyColumn(
-                        state = listState,
-                        modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(bottom = 12.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-
-                        if (pendingTasks.isNotEmpty()) {
-                            item {
-                                SectionHeader(title = "PENDIENTES", count = pendingTasks.size)
+                            if (pendingTasks.isNotEmpty()) {
+                                item {
+                                    SectionHeader(title = "PENDIENTES", count = pendingTasks.size)
+                                }
+                                items(pendingTasks, key = { it.id }) { task ->
+                                    TaskItem(
+                                        task = task,
+                                        onToggleCompleted = { viewModel.toggleTaskCompleted(it) },
+                                        modifier = Modifier
+                                            .animateItem()
+                                            .padding(horizontal = 12.dp)
+                                            .clickable {
+                                                selectedTask = task
+                                            }
+                                    )
+                                }
                             }
-                            items(pendingTasks, key = { it.id }) { task ->
-                                TaskItem(
-                                    task = task,
-                                    onToggleCompleted = { viewModel.toggleTaskCompleted(it) },
-                                    modifier = Modifier
-                                        .animateItem()
-                                        .padding(horizontal = 12.dp)
-                                        .clickable {
-                                            fabExpanded = false
-                                            selectedTask = task
-                                        }
 
-                                )
+                            if (completedTasks.isNotEmpty()) {
+                                item {
+                                    SectionHeader(title = "COMPLETADAS", count = completedTasks.size)
+                                }
+                                items(completedTasks, key = { it.id }) { task ->
+                                    TaskItem(
+                                        task = task,
+                                        onToggleCompleted = { viewModel.toggleTaskCompleted(it) },
+                                        modifier = Modifier
+                                            .animateItem()
+                                            .padding(horizontal = 12.dp)
+                                            .clickable {
+                                                selectedTask = task
+                                            }
+                                    )
+                                }
                             }
                         }
-
-                        if (completedTasks.isNotEmpty()) {
-                            item {
-                                SectionHeader(title = "COMPLETADAS", count = completedTasks.size)
-                            }
-                            items(completedTasks, key = { it.id }) { task ->
-                                TaskItem(
-                                    task = task,
-                                    onToggleCompleted = { viewModel.toggleTaskCompleted(it) },
-                                    modifier = Modifier
-                                        .animateItem()
-                                        .padding(horizontal = 12.dp)
-                                        .clickable {
-                                            fabExpanded = false
-                                            selectedTask = task
-                                        }
-
-                                )
-                            }
-                        }
-
                     }
                 }
             }
+
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .height(130.dp)
+                    .background(
+                        Brush.verticalGradient(
+                            colors = listOf(
+                                MaterialTheme.colorScheme.background.copy(alpha = 0f),
+                                MaterialTheme.colorScheme.background
+                            )
+                        )
+                    )
+            )
+
+            TaskBottomBar(
+                selectedTab = BottomTab.TASKS,
+                onTasksClick = { /* ya estás */ },
+                onCalendarClick = onCalendarClick,
+                onAddClick = onAddTaskClick,
+                modifier = Modifier.align(Alignment.BottomCenter)
+            )
         }
     }
 
@@ -250,15 +223,14 @@ fun TaskListScreen(
             onDismiss = { selectedTask = null },
             onDelete = {
                 selectedTask = null
-                taskToDelete = task // usa dialog de confirmación
+                taskToDelete = task
             },
             onEdit = {
                 selectedTask = null
-                onEditTaskClick(task.id) // navega al form con id
+                onEditTaskClick(task.id)
             }
         )
     }
-
 
     // Confirmación borrar
     if (taskToDelete != null) {
@@ -309,7 +281,6 @@ fun TaskListScreen(
                         )
                     }
                 }
-
             }
         )
     }
@@ -380,12 +351,10 @@ private fun EmptyTaskState(
     }
 }
 
-
 @Composable
 private fun TaskPriorityFilterChips(
     selected: TaskPriority?,
     onSelectedChange: (TaskPriority?) -> Unit
-
 ) {
     Row(
         modifier = Modifier
@@ -430,5 +399,3 @@ private fun TaskPriorityFilterChips(
         )
     }
 }
-
-

@@ -41,7 +41,8 @@ fun AppNavHost(
                 onTasksClick = { navController.navigate(NavRoutes.TASK_LIST) },
                 onEditTaskClick = { taskId ->
                     navController.navigate(NavRoutes.taskFormRoute(taskId))
-                }
+                },
+                onAddTaskClick = { navController.navigate(NavRoutes.taskFormRoute()) }
             )
         }
 
