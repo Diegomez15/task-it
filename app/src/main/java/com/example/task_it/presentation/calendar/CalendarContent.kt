@@ -7,73 +7,47 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material.icons.outlined.RadioButtonUnchecked
 import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.task_it.domain.model.Task
 import com.example.task_it.domain.model.TaskPriority
-import com.example.task_it.presentation.components.BottomTab
-import com.example.task_it.presentation.components.TaskBottomBar
-import com.example.task_it.presentation.components.TaskTopBar
+import com.example.task_it.presentation.tasks.detail.TaskDetailsBottomSheet
+import com.example.task_it.presentation.theme.YellowPrimary
 import com.example.task_it.presentation.theme.color
+import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.YearMonth
 import java.time.format.TextStyle
 import java.util.Locale
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
-import com.example.task_it.presentation.tasks.detail.TaskDetailsBottomSheet
-import com.example.task_it.presentation.theme.YellowPrimary
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.foundation.layout.IntrinsicSize
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.material3.Snackbar
-import androidx.compose.material3.SnackbarData
-import androidx.compose.material3.SnackbarDuration
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.SnackbarResult
-import androidx.compose.runtime.rememberCoroutineScope
-import kotlinx.coroutines.launch
 
 
 @Composable
-fun CalendarScreen(
-    isDarkTheme: Boolean,
-    onToggleTheme: () -> Unit,
-    onTasksClick: () -> Unit,
-    onEditTaskClick: (Long) -> Unit,
-    onAddTaskClick: () -> Unit
+fun CalendarContent(
+    modifier: Modifier = Modifier,
+    onEditTaskClick: (Long) -> Unit
 ) {
     val viewModel: CalendarViewModel = viewModel()
     val state by viewModel.state.collectAsState()
     var selectedTask by remember { mutableStateOf<Task?>(null) }
     var taskToDelete by remember { mutableStateOf<Task?>(null) }
-    val pendingTasks = remember(state.tasksForSelectedDate) {
-        state.tasksForSelectedDate.filter { !it.isCompleted }
-    }
-
-    val completedTasks = remember(state.tasksForSelectedDate) {
-        state.tasksForSelectedDate.filter { it.isCompleted }
-    }
 
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
@@ -96,129 +70,115 @@ fun CalendarScreen(
         }
     }
 
-    Scaffold(
-        topBar = {
-            TaskTopBar(
-                isDarkTheme = isDarkTheme,
-                onToggleTheme = onToggleTheme
-            )
-        },
-        containerColor = MaterialTheme.colorScheme.background,
-        contentWindowInsets = WindowInsets(0, 0, 0, 0)
-    ) { padding ->
+    val pendingTasks = remember(state.tasksForSelectedDate) {
+        state.tasksForSelectedDate.filter { !it.isCompleted }
+    }
+    val completedTasks = remember(state.tasksForSelectedDate) {
+        state.tasksForSelectedDate.filter { it.isCompleted }
+    }
 
-        Box(
+    Box(
+        modifier = modifier.fillMaxSize()
+    ) {
+        Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding)
+                .padding(horizontal = 12.dp)
         ) {
+            Spacer(Modifier.height(12.dp))
 
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 12.dp)
-            ) {
-                Spacer(Modifier.height(12.dp))
+            MonthHeader(
+                month = state.currentMonth,
+                onPrev = viewModel::onPrevMonth,
+                onNext = viewModel::onNextMonth
+            )
 
-                MonthHeader(
-                    month = state.currentMonth,
-                    onPrev = viewModel::onPrevMonth,
-                    onNext = viewModel::onNextMonth
-                )
+            Spacer(Modifier.height(12.dp))
 
-                Spacer(Modifier.height(12.dp))
+            CalendarCard(
+                month = state.currentMonth,
+                selectedDate = state.selectedDate,
+                markers = state.dayMarkers,
+                onSelect = viewModel::onSelectDate,
+                onPrevMonth = viewModel::onPrevMonth,
+                onNextMonth = viewModel::onNextMonth
+            )
 
-                CalendarCard(
-                    month = state.currentMonth,
-                    selectedDate = state.selectedDate,
-                    markers = state.dayMarkers,
-                    onSelect = viewModel::onSelectDate,
-                    onPrevMonth = viewModel::onPrevMonth,
-                    onNextMonth = viewModel::onNextMonth
-                )
+            Spacer(Modifier.height(16.dp))
 
-                Spacer(Modifier.height(16.dp))
+            TasksSectionHeader(
+                selectedDate = state.selectedDate,
+                taskCount = state.tasksForSelectedDate.size
+            )
 
-                TasksSectionHeader(
-                    selectedDate = state.selectedDate,
-                    taskCount = state.tasksForSelectedDate.size
-                )
+            Spacer(Modifier.height(10.dp))
 
-                Spacer(Modifier.height(10.dp))
-
-                if (state.tasksForSelectedDate.isEmpty()) {
-                    EmptyDayCard(
-                        isToday = state.selectedDate == LocalDate.now()
-                    )
-                } else {
-                    LazyColumn(
-                        modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(bottom = 110.dp),
-                        verticalArrangement = Arrangement.spacedBy(10.dp)
-                    ) {
-
-                        if (pendingTasks.isNotEmpty()) {
-                            item {
-                                SectionHeader(title = "PENDIENTES", count = pendingTasks.size)
-                            }
-                            items(pendingTasks, key = { it.id }) { task ->
-                                CalendarTaskRow(
-                                    task = task,
-                                    onClick = { selectedTask = task },
-                                    onToggleCompleted = { handleToggleCompleted(it) },
-                                    modifier = Modifier.animateItem()
-                                )
-                            }
+            if (state.tasksForSelectedDate.isEmpty()) {
+                EmptyDayCard(isToday = state.selectedDate == LocalDate.now())
+            } else {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(bottom = 110.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    if (pendingTasks.isNotEmpty()) {
+                        item { SectionHeader(title = "PENDIENTES", count = pendingTasks.size) }
+                        items(pendingTasks, key = { it.id }) { task ->
+                            CalendarTaskRow(
+                                task = task,
+                                onClick = { selectedTask = task },
+                                onToggleCompleted = { handleToggleCompleted(it) },
+                                modifier = Modifier.animateItem()
+                            )
                         }
+                    }
 
-                        if (completedTasks.isNotEmpty()) {
-                            item {
-                                SectionHeader(title = "COMPLETADAS", count = completedTasks.size)
-                            }
-                            items(completedTasks, key = { it.id }) { task ->
-                                CalendarTaskRow(
-                                    task = task,
-                                    onClick = { selectedTask = task },
-                                    onToggleCompleted = { handleToggleCompleted(it) },
-                                    modifier = Modifier.animateItem()
-                                )
-                            }
+                    if (completedTasks.isNotEmpty()) {
+                        item { SectionHeader(title = "COMPLETADAS", count = completedTasks.size) }
+                        items(completedTasks, key = { it.id }) { task ->
+                            CalendarTaskRow(
+                                task = task,
+                                onClick = { selectedTask = task },
+                                onToggleCompleted = { handleToggleCompleted(it) },
+                                modifier = Modifier.animateItem()
+                            )
                         }
                     }
                 }
             }
+        }
 
-            Box(
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .fillMaxWidth()
-                    .height(130.dp)
-                    .background(
-                        Brush.verticalGradient(
-                            colors = listOf(
-                                MaterialTheme.colorScheme.background.copy(alpha = 0f),
-                                MaterialTheme.colorScheme.background
-                            )
+        Box(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .fillMaxWidth()
+                .height(130.dp)
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            MaterialTheme.colorScheme.background.copy(alpha = 0f),
+                            MaterialTheme.colorScheme.background
                         )
                     )
-            )
+                )
+        )
 
-            TaskBottomBar(
-                selectedTab = BottomTab.CALENDAR,
-                onTasksClick = onTasksClick,
-                onCalendarClick = { /* ya estás */ },
-                onAddClick = onAddTaskClick,
-                modifier = Modifier.align(Alignment.BottomCenter)
-            )
-
-            SnackbarHost(
-                hostState = snackbarHostState,
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .padding(bottom = 100.dp),
-                snackbar = { data -> TaskSnackbar(data) }
-            )
-        }
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 100.dp),
+            snackbar = { data ->
+                Snackbar(
+                    snackbarData = data,
+                    modifier = Modifier.padding(horizontal = 12.dp),
+                    shape = RoundedCornerShape(8.dp),
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    contentColor = MaterialTheme.colorScheme.onBackground,
+                    actionColor = YellowPrimary
+                )
+            }
+        )
     }
 
     selectedTask?.let { task ->
@@ -245,22 +205,15 @@ fun CalendarScreen(
             text = { Text("¿Seguro que quieres eliminar “${taskToDelete!!.title}”?") },
             confirmButton = {
                 Row(
-                    modifier = Modifier
-                        .fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     OutlinedButton(
                         onClick = { taskToDelete = null },
                         shape = RoundedCornerShape(8.dp),
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(40.dp)
+                        modifier = Modifier.weight(1f).height(40.dp)
                     ) {
-                        Text(
-                            text = "Cancelar",
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
+                        Text("Cancelar", maxLines = 1, overflow = TextOverflow.Ellipsis)
                     }
 
                     Button(
@@ -269,19 +222,13 @@ fun CalendarScreen(
                             taskToDelete = null
                         },
                         shape = RoundedCornerShape(8.dp),
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(40.dp),
+                        modifier = Modifier.weight(1f).height(40.dp),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = YellowPrimary,
                             contentColor = MaterialTheme.colorScheme.onPrimary
                         )
                     ) {
-                        Text(
-                            text = "Eliminar",
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
+                        Text("Eliminar", maxLines = 1, overflow = TextOverflow.Ellipsis)
                     }
                 }
             }
@@ -577,17 +524,6 @@ private fun EmptyDayCard(isToday: Boolean) {
     }
 }
 
-@Composable
-private fun TaskSnackbar(data: SnackbarData) {
-    Snackbar(
-        snackbarData = data,
-        modifier = Modifier.padding(horizontal = 12.dp),
-        shape = RoundedCornerShape(8.dp),
-        containerColor = MaterialTheme.colorScheme.surface,
-        contentColor = MaterialTheme.colorScheme.onBackground,
-        actionColor = YellowPrimary
-    )
-}
 
 @Composable
 private fun CalendarTaskRow(

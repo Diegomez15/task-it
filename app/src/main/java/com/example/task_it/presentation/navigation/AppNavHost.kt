@@ -6,9 +6,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.example.task_it.presentation.calendar.CalendarScreen
+import com.example.task_it.presentation.MainPagerScreen
 import com.example.task_it.presentation.tasks.form.TaskFormScreen
-import com.example.task_it.presentation.tasks.list.TaskListScreen
 
 @Composable
 fun AppNavHost(
@@ -19,30 +18,17 @@ fun AppNavHost(
 
     NavHost(
         navController = navController,
-        startDestination = NavRoutes.TASK_LIST
+        startDestination = NavRoutes.MAIN
     ) {
 
-        composable(NavRoutes.TASK_LIST) {
-            TaskListScreen(
+        composable(NavRoutes.MAIN) {
+            MainPagerScreen(
+                isDarkTheme = isDarkTheme,
+                onToggleTheme = onToggleTheme,
                 onAddTaskClick = { navController.navigate(NavRoutes.taskFormRoute()) },
                 onEditTaskClick = { taskId ->
                     navController.navigate(NavRoutes.taskFormRoute(taskId))
-                },
-                onCalendarClick = { navController.navigate(NavRoutes.CALENDAR) },
-                isDarkTheme = isDarkTheme,
-                onToggleTheme = onToggleTheme
-            )
-        }
-
-        composable(NavRoutes.CALENDAR) {
-            CalendarScreen(
-                isDarkTheme = isDarkTheme,
-                onToggleTheme = onToggleTheme,
-                onTasksClick = { navController.navigate(NavRoutes.TASK_LIST) },
-                onEditTaskClick = { taskId ->
-                    navController.navigate(NavRoutes.taskFormRoute(taskId))
-                },
-                onAddTaskClick = { navController.navigate(NavRoutes.taskFormRoute()) }
+                }
             )
         }
 
