@@ -24,6 +24,9 @@ import com.example.task_it.domain.model.Task
 import com.example.task_it.presentation.theme.YellowPrimary
 import com.example.task_it.presentation.theme.color
 import com.example.task_it.presentation.utils.isOverdue
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.statusBarsPadding
 
 
 
@@ -54,11 +57,13 @@ fun TaskDetailsBottomSheet(
         sheetState = sheetState,
         containerColor = MaterialTheme.colorScheme.surfaceBright,
         shape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp),
-        dragHandle = { }
+        dragHandle = { },
+        windowInsets = WindowInsets(0, 0, 0, 0)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
+                .navigationBarsPadding()
                 .padding(horizontal = 20.dp, vertical = 12.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
