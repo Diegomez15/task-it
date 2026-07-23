@@ -45,6 +45,14 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarData
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
 
 
 @Composable
@@ -65,6 +73,27 @@ fun CalendarScreen(
 
     val completedTasks = remember(state.tasksForSelectedDate) {
         state.tasksForSelectedDate.filter { it.isCompleted }
+    }
+
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+
+    fun handleToggleCompleted(task: Task) {
+        val wasCompleted = task.isCompleted
+        viewModel.toggleCompleted(task)
+
+        if (!wasCompleted) {
+            scope.launch {
+                val result = snackbarHostState.showSnackbar(
+                    message = "Tarea completada",
+                    actionLabel = "Deshacer",
+                    duration = SnackbarDuration.Short
+                )
+                if (result == SnackbarResult.ActionPerformed) {
+                    viewModel.toggleCompleted(task.copy(isCompleted = true))
+                }
+            }
+        }
     }
 
     Scaffold(
@@ -136,7 +165,7 @@ fun CalendarScreen(
                                 CalendarTaskRow(
                                     task = task,
                                     onClick = { selectedTask = task },
-                                    onToggleCompleted = { viewModel.toggleCompleted(it) },
+                                    onToggleCompleted = { handleToggleCompleted(it) },
                                     modifier = Modifier.animateItem()
                                 )
                             }
@@ -150,7 +179,7 @@ fun CalendarScreen(
                                 CalendarTaskRow(
                                     task = task,
                                     onClick = { selectedTask = task },
-                                    onToggleCompleted = { viewModel.toggleCompleted(it) },
+                                    onToggleCompleted = { handleToggleCompleted(it) },
                                     modifier = Modifier.animateItem()
                                 )
                             }
@@ -180,6 +209,14 @@ fun CalendarScreen(
                 onCalendarClick = { /* ya estás */ },
                 onAddClick = onAddTaskClick,
                 modifier = Modifier.align(Alignment.BottomCenter)
+            )
+
+            SnackbarHost(
+                hostState = snackbarHostState,
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 100.dp),
+                snackbar = { data -> TaskSnackbar(data) }
             )
         }
     }
@@ -538,6 +575,18 @@ private fun EmptyDayCard(isToday: Boolean) {
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
+}
+
+@Composable
+private fun TaskSnackbar(data: SnackbarData) {
+    Snackbar(
+        snackbarData = data,
+        modifier = Modifier.padding(horizontal = 12.dp),
+        shape = RoundedCornerShape(8.dp),
+        containerColor = MaterialTheme.colorScheme.surface,
+        contentColor = MaterialTheme.colorScheme.onBackground,
+        actionColor = YellowPrimary
+    )
 }
 
 @Composable

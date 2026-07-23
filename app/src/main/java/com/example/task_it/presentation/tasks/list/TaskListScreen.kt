@@ -37,6 +37,14 @@ import com.example.task_it.presentation.components.BottomTab
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.LocalFocusManager
 import kotlinx.coroutines.flow.distinctUntilChanged
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarData
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
 
 @Composable
 fun TaskListScreen(
@@ -50,6 +58,27 @@ fun TaskListScreen(
     val viewModel: TaskListViewModel = viewModel()
     val tasks by viewModel.tasks.collectAsState()
     val focusManager = LocalFocusManager.current
+
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+
+    fun handleToggleCompleted(task: Task) {
+        val wasCompleted = task.isCompleted
+        viewModel.toggleTaskCompleted(task)
+
+        if (!wasCompleted) {
+            scope.launch {
+                val result = snackbarHostState.showSnackbar(
+                    message = "Tarea completada",
+                    actionLabel = "Deshacer",
+                    duration = SnackbarDuration.Short
+                )
+                if (result == SnackbarResult.ActionPerformed) {
+                    viewModel.toggleTaskCompleted(task.copy(isCompleted = true))
+                }
+            }
+        }
+    }
 
     var taskToDelete by remember { mutableStateOf<Task?>(null) }
     var selectedPriority by rememberSaveable { mutableStateOf<TaskPriority?>(null) } // null = Todas
@@ -169,7 +198,7 @@ fun TaskListScreen(
                                 items(pendingTasks, key = { it.id }) { task ->
                                     TaskItem(
                                         task = task,
-                                        onToggleCompleted = { viewModel.toggleTaskCompleted(it) },
+                                        onToggleCompleted = { handleToggleCompleted(it) },
                                         modifier = Modifier
                                             .animateItem()
                                             .padding(horizontal = 12.dp)
@@ -187,7 +216,7 @@ fun TaskListScreen(
                                 items(completedTasks, key = { it.id }) { task ->
                                     TaskItem(
                                         task = task,
-                                        onToggleCompleted = { viewModel.toggleTaskCompleted(it) },
+                                        onToggleCompleted = { handleToggleCompleted(it) },
                                         modifier = Modifier
                                             .animateItem()
                                             .padding(horizontal = 12.dp)
@@ -223,6 +252,14 @@ fun TaskListScreen(
                 onCalendarClick = onCalendarClick,
                 onAddClick = onAddTaskClick,
                 modifier = Modifier.align(Alignment.BottomCenter)
+            )
+
+            SnackbarHost(
+                hostState = snackbarHostState,
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 100.dp),
+                snackbar = { data -> TaskSnackbar(data) }
             )
         }
     }
@@ -359,6 +396,18 @@ private fun EmptyTaskState(
             Text(text = "Añadir tarea")
         }
     }
+}
+
+@Composable
+private fun TaskSnackbar(data: SnackbarData) {
+    Snackbar(
+        snackbarData = data,
+        modifier = Modifier.padding(horizontal = 12.dp),
+        shape = RoundedCornerShape(8.dp),
+        containerColor = MaterialTheme.colorScheme.surface,
+        contentColor = MaterialTheme.colorScheme.onBackground,
+        actionColor = YellowPrimary
+    )
 }
 
 @Composable
