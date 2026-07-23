@@ -35,7 +35,8 @@ import com.example.task_it.presentation.components.TaskTopBar
 import com.example.task_it.presentation.components.TaskBottomBar
 import com.example.task_it.presentation.components.BottomTab
 import androidx.compose.ui.graphics.Brush
-
+import androidx.compose.ui.platform.LocalFocusManager
+import kotlinx.coroutines.flow.distinctUntilChanged
 
 @Composable
 fun TaskListScreen(
@@ -48,6 +49,7 @@ fun TaskListScreen(
 ) {
     val viewModel: TaskListViewModel = viewModel()
     val tasks by viewModel.tasks.collectAsState()
+    val focusManager = LocalFocusManager.current
 
     var taskToDelete by remember { mutableStateOf<Task?>(null) }
     var selectedPriority by rememberSaveable { mutableStateOf<TaskPriority?>(null) } // null = Todas
@@ -68,6 +70,14 @@ fun TaskListScreen(
     var selectedTask by remember { mutableStateOf<Task?>(null) }
 
     val listState = rememberLazyListState()
+
+    LaunchedEffect(listState) {
+        snapshotFlow { listState.isScrollInProgress }
+            .distinctUntilChanged()
+            .collect { isScrolling ->
+                if (isScrolling) focusManager.clearFocus()
+            }
+    }
 
     Scaffold(
         topBar = {
