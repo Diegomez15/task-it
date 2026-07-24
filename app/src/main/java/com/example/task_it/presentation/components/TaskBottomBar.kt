@@ -1,5 +1,7 @@
 package com.example.task_it.presentation.components
 
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -14,14 +16,19 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import com.example.task_it.presentation.theme.YellowPrimary
-import androidx.compose.ui.draw.clip
 
 enum class BottomTab { TASKS, CALENDAR }
+
+private val BarHeight = 64.dp
+private val CenterButtonSize = 44.dp
+private val IndicatorInset = 6.dp
 
 @Composable
 fun TaskBottomBar(
@@ -34,51 +41,83 @@ fun TaskBottomBar(
     Surface(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 24.dp, vertical = 24.dp)
-            .height(64.dp),
+            .navigationBarsPadding()
+            .padding(horizontal = 24.dp, vertical = 0.dp)
+            .height(BarHeight),
         shape = RoundedCornerShape(32.dp),
-        color = MaterialTheme.colorScheme.surfaceBright,
-        shadowElevation = 4.dp
+        color = MaterialTheme.colorScheme.surface,
+        shadowElevation = 6.dp
     ) {
-        Row(
-            modifier = Modifier.fillMaxSize(),
-            horizontalArrangement = Arrangement.SpaceEvenly,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            BottomBarItem(
-                icon = Icons.AutoMirrored.Filled.List,
-                label = "Tareas",
-                selected = selectedTab == BottomTab.TASKS,
-                onClick = onTasksClick,
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxHeight()
-            )
+        BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+            val itemWidth = (maxWidth - CenterButtonSize) / 2
+            val indicatorWidth = itemWidth - IndicatorInset * 2
 
-            Box(
-                modifier = Modifier
-                    .size(44.dp)
-                    .clip(CircleShape)
-                    .background(YellowPrimary)
-                    .clickable(onClick = onAddClick),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.Add,
-                    contentDescription = "Nueva tarea",
-                    tint = MaterialTheme.colorScheme.onPrimary
-                )
+            val targetOffsetX = if (selectedTab == BottomTab.TASKS) {
+                IndicatorInset
+            } else {
+                itemWidth + CenterButtonSize + IndicatorInset
             }
 
-            BottomBarItem(
-                icon = Icons.Filled.CalendarToday,
-                label = "Calendario",
-                selected = selectedTab == BottomTab.CALENDAR,
-                onClick = onCalendarClick,
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxHeight()
+            val animatedOffsetX by animateDpAsState(
+                targetValue = targetOffsetX,
+                animationSpec = tween(durationMillis = 300),
+                label = "bottomBarIndicatorOffset"
             )
+
+            // Indicador deslizante (pastilla de fondo)
+            Box(
+                modifier = Modifier
+                    .offset(x = animatedOffsetX)
+                    .padding(vertical = IndicatorInset)
+                    .width(indicatorWidth)
+                    .fillMaxHeight()
+                    .clip(RoundedCornerShape(32.dp))
+                    .background(MaterialTheme.colorScheme.surfaceBright)
+            )
+
+            Row(modifier = Modifier.fillMaxSize()) {
+                BottomBarItem(
+                    icon = Icons.AutoMirrored.Filled.List,
+                    label = "Tareas",
+                    selected = selectedTab == BottomTab.TASKS,
+                    onClick = onTasksClick,
+                    modifier = Modifier
+                        .width(itemWidth)
+                        .fillMaxHeight()
+                )
+
+                Box(
+                    modifier = Modifier
+                        .width(CenterButtonSize)
+                        .fillMaxHeight(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(CenterButtonSize)
+                            .clip(CircleShape)
+                            .background(YellowPrimary)
+                            .clickable(onClick = onAddClick),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Add,
+                            contentDescription = "Nueva tarea",
+                            tint = MaterialTheme.colorScheme.onPrimary
+                        )
+                    }
+                }
+
+                BottomBarItem(
+                    icon = Icons.Filled.CalendarToday,
+                    label = "Calendario",
+                    selected = selectedTab == BottomTab.CALENDAR,
+                    onClick = onCalendarClick,
+                    modifier = Modifier
+                        .width(itemWidth)
+                        .fillMaxHeight()
+                )
+            }
         }
     }
 }
@@ -96,7 +135,7 @@ private fun BottomBarItem(
 
     Column(
         modifier = modifier
-            .padding(6.dp)
+            .padding(IndicatorInset)
             .clip(RoundedCornerShape(32.dp))
             .clickable(onClick = onClick)
             .padding(vertical = 4.dp),

@@ -19,6 +19,7 @@ import com.example.task_it.presentation.components.TaskBottomBar
 import com.example.task_it.presentation.components.TaskTopBar
 import com.example.task_it.presentation.tasks.list.TaskListContent
 import kotlinx.coroutines.launch
+import androidx.compose.animation.core.tween
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -67,10 +68,20 @@ fun MainPagerScreen(
             TaskBottomBar(
                 selectedTab = selectedTab,
                 onTasksClick = {
-                    scope.launch { pagerState.animateScrollToPage(0) }
+                    scope.launch {
+                        pagerState.animateScrollToPage(
+                            page = 0,
+                            animationSpec = tween(durationMillis = 400)
+                        )
+                    }
                 },
                 onCalendarClick = {
-                    scope.launch { pagerState.animateScrollToPage(1) }
+                    scope.launch {
+                        pagerState.animateScrollToPage(
+                            page = 1,
+                            animationSpec = tween(durationMillis = 400)
+                        )
+                    }
                 },
                 onAddClick = onAddTaskClick,
                 modifier = Modifier.align(Alignment.BottomCenter)
